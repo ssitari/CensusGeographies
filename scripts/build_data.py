@@ -52,6 +52,13 @@ SRC = ROOT / "sources"
 # land area. Optional: if the file is absent the build falls back to cb.
 NYBB_GPKG = SRC / "nycp_nybb_2023.gpkg"
 
+# NYC census tracts carrying DCP's own identifiers alongside the federal GEOID:
+# NTA2020, CDTA2020 and PUMA are all present, so the neighbourhood layers are
+# aggregations of this one file rather than four separate downloads. Its
+# citywide area is 302.1 sq mi, identical to the borough file, so the water
+# treatment is consistent across every NYC layer.
+NYCT_GPKG = SRC / "cul_nyc_tracts_2020.gpkg"
+
 
 def pick(gdf, *candidates):
     """First column that actually exists. TIGER suffixes the tabulation
@@ -108,6 +115,27 @@ def boroughs(cb_counties, tiger_counties):
     d = d.assign(GEOID=j["GEOID"].values,
                  NAME=j["BoroName"] + " (" + j["NAMELSAD"] + ")")
     return d
+
+
+def nyc_tracts():
+    """NYC tracts from DCP, water excluded, or None if the file isn't present."""
+    if not NYCT_GPKG.exists():
+        print(f"  (no {NYCT_GPKG.name} in sources/ — NYC layers fall back to Census)")
+        return None
+    return gpd.read_file(NYCT_GPKG).to_crs(4326)
+
+
+def aggregate(g, by, name_col, geoid=None):
+    """Dissolve tracts into one of DCP's aggregate geographies.
+
+    NTAs and CDTAs are defined as aggregations of 2020 census tracts, so
+    dissolving on the tract file's own NTA2020 / CDTA2020 columns reproduces
+    them exactly and keeps every NYC layer on identical geometry. Building them
+    this way also means one source file and one citation instead of four."""
+    out = g.dissolve(by=by, aggfunc="first").reset_index()
+    out["GEOID"] = out[by] if geoid is None else geoid(out)
+    out["NAME"] = out[name_col]
+    return out
 
 
 def write(gdf, name, id_col=None, name_col=None):
@@ -181,24 +209,46 @@ def main():
     write(boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full),
           "borough", id_col="GEOID", name_col="NAME")
 
-    # PUMAs download statewide; keep the ~55 that sit inside the five boroughs.
-    #
-    # No cb=True here: cartographic boundary PUMAs stop at 2019, and 2019 means
-    # 2010-vintage PUMA boundaries — a different set of shapes, not a cleaner
-    # version of these. Silently swapping vintages to get water trimming would
-    # be trading a cosmetic problem for a factual one. Stays raw TIGER until
-    # the DCP water-trimmed file replaces it.
-    write(within(pumas(state=NY, year=YEAR), nyc_mask), "puma")
+    nyct = nyc_tracts()
 
-    if NTA_URL and CDTA_URL:
-        write(gpd.read_file(NTA_URL), "nta")
-        write(gpd.read_file(CDTA_URL), "cdta")
+    if nyct is None:
+        # Fallback: TIGER PUMAs, water included AND 2010-vintage. See below.
+        write(within(pumas(state=NY, year=YEAR), nyc_mask), "puma")
+        print("  nta/cdta      skipped — needs the DCP tract file")
     else:
-        print("  nta/cdta      skipped — set NTA_URL and CDTA_URL first")
+        # PUMAs are 2020 vintage, taken from the tract file's PUMA column.
+        #
+        # This matters more than it looks. pygris `pumas(year=2020)` returns a
+        # GEOID10 column — those are 2010-vintage PUMAs, because 2020 PUMAs
+        # were not delineated until 2022 and the TIGER 2020 release predates
+        # them. Only 8 of 55 codes overlap between the two. Everything else in
+        # this build is 2020 vintage, so the TIGER layer was quietly the odd
+        # one out. Cross-checked: these 55 codes match TIGER 2022 and 2023
+        # exactly.
+        names = pumas(state=NY, year=2022)[["GEOID20", "NAMELSAD20"]]
+        puma = aggregate(nyct, "PUMA", "PUMA",
+                         geoid=lambda d: "36" + d["PUMA"].astype(str).str.zfill(5))
+        puma = puma.merge(names, left_on="GEOID", right_on="GEOID20", how="left")
+        puma["NAME"] = puma["NAMELSAD20"].fillna("PUMA " + puma["GEOID"])
+        write(puma, "puma", id_col="GEOID", name_col="NAME")
+
+        write(aggregate(nyct, "NTA2020", "NTAName"), "nta",
+              id_col="GEOID", name_col="NAME")
+        write(aggregate(nyct, "CDTA2020", "CDTANAME"), "cdta",
+              id_col="GEOID", name_col="NAME")
 
     print("small areas")
     manhattan = co_full[co_full.COUNTYFP == DEMO_COUNTY]
-    write(tracts(state=NY, county=DEMO_COUNTY, year=YEAR, cb=True), "tract")
+
+    if nyct is None:
+        write(tracts(state=NY, county=DEMO_COUNTY, year=YEAR, cb=True), "tract")
+    else:
+        # Same 310 GEOIDs as the Census cb file, verified, but 22.8 sq mi
+        # instead of 31.7 — the cb tracts still carry the Hudson out to the
+        # New Jersey line.
+        man = nyct[nyct.GEOID.str.startswith(NY + DEMO_COUNTY)].copy()
+        man["NAME"] = "Census Tract " + man["CTLabel"].astype(str)
+        write(man, "tract", id_col="GEOID", name_col="NAME")
 
     # 2020 ZCTAs are published nationally only — no state subset exists. Pull
     # the generalised cartographic boundary version (a fraction of the full

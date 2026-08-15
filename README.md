@@ -200,22 +200,27 @@ disclaimer is more than pro forma — it is accurate.
 
 ### The NYC layers — NYC Department of City Planning
 
-The borough boundaries are DCP's water-excluded file, obtained through Columbia
-University Libraries and committed as `sources/nycp_nybb_2023.gpkg`:
+Every New York City layer comes from two DCP files obtained through Columbia
+University Libraries, both committed under `sources/`:
 
 > New York (N.Y.). Department of City Planning. *New York City Boroughs, 2023.*
 > [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023)
 
-The catalog record lists rights as *None* and access as *public*. It is
-committed rather than downloaded at build time so the pipeline cannot break
-when a URL moves; the build falls back to Census counties if it is absent.
+> New York (N.Y.). Department of City Planning and Columbia University
+> Libraries. *New York City Census Tracts with Multiple Tract Identifiers,
+> 2020.* [geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020)
 
-NTAs and CDTAs will come from the same publisher via
-[NYC Open Data](https://opendata.cityofnewyork.us/overview/). The City makes no
-warranty as to "the completeness, accuracy, content, or fitness for any
-particular purpose or use of any public data set", and notes that additional
-terms may be set by the providing agency. Confirm DCP's own terms when you fill
-in `NTA_URL` and `CDTA_URL` — see [SOURCES.md](SOURCES.md).
+Both catalog records list rights as *None* and access as *public*. They are
+committed rather than downloaded at build time so the pipeline cannot break
+when a URL moves; the build falls back to Census layers if either is absent.
+
+The tract file carries `NTA2020`, `CDTA2020` and `PUMA` columns beside the
+federal `GEOID`, so tracts, NTAs, CDTAs and PUMAs are all dissolves of that one
+file. That keeps every NYC layer on identical geometry and reduces four
+citations to one.
+
+Census cb layers still in use for NYC — currently just block groups — carry
+open water. See [SOURCES.md](SOURCES.md) for the measurements.
 
 ### Written copy
 

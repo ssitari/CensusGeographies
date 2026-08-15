@@ -17,6 +17,7 @@ Quote verbatim where possible. Paraphrase drifts.
 | Source | Status | Obligation |
 |---|---|---|
 | NYC Boroughs 2023 (`sources/nycp_nybb_2023.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning, *New York City Boroughs, 2023*. Via Columbia University Libraries, [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023) |
+| NYC Census Tracts 2020 (`sources/cul_nyc_tracts_2020.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning and Columbia University Libraries, *New York City Census Tracts with Multiple Tract Identifiers, 2020*. [geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020) |
 | Census TIGER/Line | Public domain — "Copyright protection is not available for any work of the United States Government (Title 17 U.S.C., Section 105)" | Cite the Bureau; trademark notice; conspicuous statement on repackaging — all in the page footer. [Tech doc ch. 1](https://www2.census.gov/geo/pdfs/maps-data/data/tiger/tgrshp2020/TGRSHP2020_TechDoc_Ch1.pdf) |
 | NYC Open Data | No warranty of "completeness, accuracy, content, or fitness for any particular purpose"; agencies may add terms | Confirm DCP's own terms before enabling the NTA/CDTA layers. [Overview](https://opendata.cityofnewyork.us/overview/) |
 
@@ -71,12 +72,24 @@ isn't written down.
   read "Brooklyn (Kings County)" to make the inversion visible on hover.
   Simplified at 1.5% rather than 8%: the DCP file has ~83k vertices where the
   Census layers arrive pre-generalized.
-- **The remaining NYC layers still carry water**, measured against DCP
-  Manhattan at 22.8 mi²: cb tracts and cb block groups are both 31.7 mi²
-  (+38.9%), and TIGER PUMAs across the city are 346.5 mi² against 302.1
-  (+14.7%). Worth replacing with DCP equivalents. Not visually obvious, because
-  water tracts fill the same colour as land — trust the measurement, not the
-  screenshot.
+- **Tracts, NTAs, CDTAs and PUMAs all come from one DCP file.** The tract file
+  carries `NTA2020`, `CDTA2020` and `PUMA` columns beside the federal `GEOID`,
+  and NTAs are defined as aggregations of 2020 tracts, so the neighbourhood
+  layers are dissolves of that file rather than separate downloads. Yields 262
+  NTAs, 71 CDTAs, 55 PUMAs. Citywide area is 302.1 mi², identical to the
+  borough file, so water treatment is consistent across every NYC layer.
+  Manhattan tract GEOIDs were verified identical to the Census cb set (310 of
+  310) — same tracts, 22.8 mi² instead of 31.7.
+- **PUMAs are 2020 vintage, and this was previously wrong.** `pygris
+  pumas(year=2020)` returns a `GEOID10` column: those are *2010*-vintage PUMAs,
+  because 2020 PUMAs were not delineated until 2022 and the TIGER 2020 release
+  predates them. Only 8 of 55 codes overlap between the two sets. The DCP
+  file's codes match TIGER 2022 and 2023 at 55 of 55. Everything else in the
+  build is 2020 vintage, so the old layer was silently the odd one out.
+- **Block groups are still Census cb** and still carry water — 31.7 mi² against
+  Manhattan's actual 22.8 (+38.9%). The one remaining NYC layer to replace.
+  Not visually obvious, because water polygons fill the same colour as land —
+  trust the measurement, not the screenshot.
 - **Spatial filters use water-inclusive TIGER masks**, never the trimmed cb
   ones — filtering PUMAs against a shoreline-clipped borough silently dropped
   3 of 55 whose representative point sits over water.

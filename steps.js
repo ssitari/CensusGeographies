@@ -236,9 +236,17 @@ export const STEPS = [
       nests: { nation: true, state: true, county: false, tract: true },
       size: TODO,
       acs: TODO,
-      geoid: { pattern: TODO, example: TODO, parts: [] },
+      // DCP's own codes, not federal ones — and they decompose too: a borough
+      // prefix followed by a four-digit number. Worth pointing at, since the
+      // contrast with an 11-digit federal GEOID is the visible difference
+      // between a local and a Census geography.
+      geoid: {
+        pattern: "BBNNNN",
+        example: "MN0191",
+        parts: [["borough", 2], ["nta", 4]],
+      },
       gotcha: TODO,
-      source: null,
+      source: "https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020",
     },
   },
   {

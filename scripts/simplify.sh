@@ -60,12 +60,15 @@ echo "new york city"
 # we see them. At 8% it cost 72 KB for five polygons. Percentages here are
 # relative to each source's own detail, not a shared scale.
 simplify borough      1.5% borough
-simplify puma         8%   puma
-simplify cdta         10%  cdta
-simplify nta          10%  nta
+# The NYC layers below are all dissolved from the DCP tract file, which carries
+# survey-grade detail like the borough boundary — hence percentages an order of
+# magnitude below the Census layers.
+simplify puma         2%   puma
+simplify cdta         2%   cdta
+simplify nta          3%   nta
 
 echo "small areas"
-simplify tract        15%  tract
+simplify tract        3%   tract
 simplify zcta         10%  zcta
 simplify block-group  25%  bg
 simplify block        40%  block
