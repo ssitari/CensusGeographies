@@ -118,12 +118,21 @@ async function draw(step, animate = true) {
   );
   sel.exit().transition().duration(animate ? 250 : 0).style("opacity", 0).remove();
 
+  // How a unit is drawn describes the shapes on screen; the callout describes
+  // the step's subject. Usually they agree, so the style defaults to the
+  // callout's nesting answer. The NYC step is where they come apart: the
+  // callout is about NYC the *place*, which does not nest in a county, but the
+  // shapes drawn are the five boroughs, which are counties and do nest.
+  // Drawing those as dashed "crosses boundaries" outlines would be a lie about
+  // what the reader is looking at, so a step can set unitStyle explicitly.
+  const style = step.unitStyle || (step.callout.nests.county === false ? "outline" : "fill");
+
   const entered = sel
     .enter()
     .append("path")
     .attr("class", "unit")
     .classed("local-unit", !!step.local)
-    .classed("no-nest", step.callout.nests.county === false)
+    .classed("no-nest", style === "outline")
     .style("opacity", 0)
     .on("mouseenter", (event, d) => showReadout(main.spec, d))
     .on("mouseleave", clearReadout);

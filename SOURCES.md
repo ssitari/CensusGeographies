@@ -16,6 +16,7 @@ Quote verbatim where possible. Paraphrase drifts.
 
 | Source | Status | Obligation |
 |---|---|---|
+| NYC Boroughs 2023 (`sources/nycp_nybb_2023.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning, *New York City Boroughs, 2023*. Via Columbia University Libraries, [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023) |
 | Census TIGER/Line | Public domain — "Copyright protection is not available for any work of the United States Government (Title 17 U.S.C., Section 105)" | Cite the Bureau; trademark notice; conspicuous statement on repackaging — all in the page footer. [Tech doc ch. 1](https://www2.census.gov/geo/pdfs/maps-data/data/tiger/tgrshp2020/TGRSHP2020_TechDoc_Ch1.pdf) |
 | NYC Open Data | No warranty of "completeness, accuracy, content, or fitness for any particular purpose"; agencies may add terms | Confirm DCP's own terms before enabling the NTA/CDTA layers. [Overview](https://opendata.cityofnewyork.us/overview/) |
 
@@ -53,6 +54,29 @@ isn't written down.
   areas cannot be placed. The app counts them and shows a notice on the map
   rather than dropping them silently. If the states callout cites a count, say
   which count it is.
+- **Boroughs come from NYC DCP, not Census.** Cartographic boundary counties
+  still keep the Hudson out to the New Jersey line. Measured against the DCP
+  water-excluded file, in square miles:
+
+  | Borough | TIGER | CB | DCP | further gain |
+  |---|---|---|---|---|
+  | Manhattan | 33.9 | 31.7 | 22.8 | 28.0% |
+  | Brooklyn | 96.9 | 79.3 | 69.4 | 12.6% |
+  | Queens | 181.5 | 123.1 | 109.1 | 11.4% |
+  | Bronx | 57.4 | 47.5 | 42.6 | 10.4% |
+  | Staten Island | 102.9 | 57.7 | 58.2 | −0.9% |
+
+  The county GEOID is recovered by spatial join rather than hard-coding
+  BoroCode 1–5 to FIPS, so a mislabel fails loudly instead of silently. Labels
+  read "Brooklyn (Kings County)" to make the inversion visible on hover.
+  Simplified at 1.5% rather than 8%: the DCP file has ~83k vertices where the
+  Census layers arrive pre-generalized.
+- **The remaining NYC layers still carry water**, measured against DCP
+  Manhattan at 22.8 mi²: cb tracts and cb block groups are both 31.7 mi²
+  (+38.9%), and TIGER PUMAs across the city are 346.5 mi² against 302.1
+  (+14.7%). Worth replacing with DCP equivalents. Not visually obvious, because
+  water tracts fill the same colour as land — trust the measurement, not the
+  screenshot.
 - **Spatial filters use water-inclusive TIGER masks**, never the trimmed cb
   ones — filtering PUMAs against a shoreline-clipped borough silently dropped
   3 of 55 whose representative point sits over water.

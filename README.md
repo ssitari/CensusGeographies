@@ -198,9 +198,19 @@ jurisdictional authority or rights of ownership", and are "not legal land
 descriptions". Given that this tool deliberately over-simplifies geometry, that
 disclaimer is more than pro forma — it is accurate.
 
-### The NYC layers — NYC Open Data
+### The NYC layers — NYC Department of City Planning
 
-NTAs and CDTAs come from the NYC Department of City Planning via
+The borough boundaries are DCP's water-excluded file, obtained through Columbia
+University Libraries and committed as `sources/nycp_nybb_2023.gpkg`:
+
+> New York (N.Y.). Department of City Planning. *New York City Boroughs, 2023.*
+> [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023)
+
+The catalog record lists rights as *None* and access as *public*. It is
+committed rather than downloaded at build time so the pipeline cannot break
+when a URL moves; the build falls back to Census counties if it is absent.
+
+NTAs and CDTAs will come from the same publisher via
 [NYC Open Data](https://opendata.cityofnewyork.us/overview/). The City makes no
 warranty as to "the completeness, accuracy, content, or fitness for any
 particular purpose or use of any public data set", and notes that additional

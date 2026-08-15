@@ -55,7 +55,11 @@ simplify cd-ny        4%   cd
 simplify place-ny     3%   place
 
 echo "new york city"
-simplify borough      8%   borough
+# 1.5%, far below the others: the DCP borough file is a survey-grade boundary
+# with ~83k vertices, where the Census layers are already generalised before
+# we see them. At 8% it cost 72 KB for five polygons. Percentages here are
+# relative to each source's own detail, not a shared scale.
+simplify borough      1.5% borough
 simplify puma         8%   puma
 simplify cdta         10%  cdta
 simplify nta          10%  nta

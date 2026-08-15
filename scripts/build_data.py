@@ -42,7 +42,15 @@ DEMO_TRACTS = ["014500"]
 NTA_URL = None   # 2020 Neighborhood Tabulation Areas
 CDTA_URL = None  # 2020 Community District Tabulation Areas
 
-OUT = pathlib.Path(__file__).resolve().parent.parent / "data" / "_raw"
+ROOT = pathlib.Path(__file__).resolve().parent.parent
+OUT = ROOT / "data" / "_raw"
+SRC = ROOT / "sources"
+
+# NYC DCP borough boundaries, water excluded, via Columbia University Libraries.
+# Even the cartographic boundary counties keep a lot of water inside New York
+# City — Manhattan is 31.7 sq mi in cb against 22.8 here, the island's actual
+# land area. Optional: if the file is absent the build falls back to cb.
+NYBB_GPKG = SRC / "nycp_nybb_2023.gpkg"
 
 
 def pick(gdf, *candidates):
@@ -68,6 +76,38 @@ def within(gdf, mask, how="inner"):
     # shouldn't be drawn as if it belonged to it.
     pts = g.geometry.representative_point()
     return g[pts.within(m)].copy() if how == "inner" else g
+
+
+def boroughs(cb_counties, tiger_counties):
+    """NYC boroughs from the DCP water-excluded file, falling back to cb.
+
+    Two things happen here that are worth being explicit about.
+
+    The county GEOID is recovered by spatially joining each borough to the
+    TIGER counties rather than hard-coding BoroCode 1-5 to FIPS 061/005/047/
+    081/085. The mapping is stable and well known, but deriving it from the
+    geometry means the build cannot silently mislabel a borough, and the join
+    fails loudly if it ever stops matching.
+
+    The label is built as "Brooklyn (Kings County)" because the NYC step exists
+    to teach that one place contains five counties. Showing both names in the
+    hover readout makes the point before anyone reads the callout."""
+    if not NYBB_GPKG.exists():
+        print(f"  borough       using cb — {NYBB_GPKG.name} not found in sources/")
+        return cb_counties
+
+    d = gpd.read_file(NYBB_GPKG).to_crs(4326)
+    pts = d.copy()
+    pts["geometry"] = d.representative_point()
+    j = gpd.sjoin(pts, tiger_counties.to_crs(4326)[["GEOID", "NAMELSAD", "geometry"]],
+                  predicate="within", how="left")
+
+    if j["GEOID"].isna().any():
+        raise RuntimeError(f"borough join failed for {list(j[j.GEOID.isna()].BoroName)}")
+
+    d = d.assign(GEOID=j["GEOID"].values,
+                 NAME=j["BoroName"] + " (" + j["NAMELSAD"] + ")")
+    return d
 
 
 def write(gdf, name, id_col=None, name_col=None):
@@ -130,15 +170,16 @@ def main():
 
     print("new york city")
     co = counties(state=NY, year=YEAR, cb=True, resolution="500k")
-    nyc = co[co.COUNTYFP.isin(NYC_COUNTIES)]
-    write(nyc, "borough")
 
     # Spatial filtering uses the *water-inclusive* TIGER counties, never the
-    # trimmed cb ones. Filtering PUMAs against a shoreline-clipped borough
+    # trimmed ones. Filtering PUMAs against a shoreline-clipped borough
     # dropped three of the 55 whose representative point sits over water —
     # the mask defines "which features belong to NYC", not what gets drawn.
     co_full = counties(state=NY, year=YEAR)
     nyc_mask = co_full[co_full.COUNTYFP.isin(NYC_COUNTIES)]
+
+    write(boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full),
+          "borough", id_col="GEOID", name_col="NAME")
 
     # PUMAs download statewide; keep the ~55 that sit inside the five boroughs.
     #

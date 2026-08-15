@@ -180,10 +180,15 @@ export const STEPS = [
     label: "New York City",
     scope: "One place, five counties",
     layer: "borough",
-    context: ["place-ny"],
+    // Neighbouring counties, not all 1,293 NY places: at this zoom the places
+    // layer is visual noise, while Westchester and Nassau orient the reader.
+    context: ["county-ny"],
     projection: "local",
     transition: true,
     inversion: true, // app draws this one differently — see note in README
+    // The shapes here are counties and they nest; the callout's subject, NYC
+    // the place, does not. Style follows the shapes. See app.js draw().
+    unitStyle: "fill",
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: false, tract: null },
