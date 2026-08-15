@@ -96,25 +96,58 @@ def write(gdf, name, id_col=None, name_col=None):
 
 
 def main():
+    # Cartographic boundary files (cb=True) rather than raw TIGER, everywhere
+    # they exist. They are clipped to the coastline, which for New York removes
+    # a lot of open water — 44% of Richmond County's TIGER extent, 32% of
+    # Queens — and the Census describes them as "specifically designed for
+    # small scale thematic mapping", which is exactly what this is.
+    #
+    # Caveat worth knowing: cb clips to the *outer* coastline, not to local
+    # shorelines. Manhattan still loses only ~6%, so the Hudson out to the New
+    # Jersey line stays inside the county. The NYC steps want DCP's
+    # water-trimmed files instead; see SOURCES.md.
+    #
+    # `nation` and `divisions` are cb-only products already, so they take a
+    # resolution but no cb flag. Blocks and roads have no cb equivalent at all.
+
     print("national frames")
-    write(nation(year=YEAR), "nation")
-    write(divisions(year=YEAR), "division")
-    write(states(year=YEAR), "state")
+    write(nation(year=YEAR, resolution="20m"), "nation")
+    write(divisions(year=YEAR, resolution="20m"), "division")
+
+    # 5m, not 20m: the 1:20,000,000 state file drops American Samoa, Guam, the
+    # Northern Mariana Islands and the U.S. Virgin Islands, leaving 52 features
+    # instead of 56. Losing the island areas from a tool that teaches what
+    # counts as a state-equivalent would be the wrong trade for a smaller file.
+    write(states(year=YEAR, cb=True, resolution="5m"), "state")
 
     print("new york state")
-    ny = states(year=YEAR)
+    # 500k for the New York frames — 20m is too coarse once the camera descends.
+    ny = states(year=YEAR, cb=True, resolution="500k")
     write(ny[ny.GEOID == NY], "state-ny")
-    write(counties(state=NY, year=YEAR), "county-ny")
-    write(congressional_districts(state=NY, year=YEAR), "cd-ny")
-    write(places(state=NY, year=YEAR), "place-ny")
+    write(counties(state=NY, year=YEAR, cb=True, resolution="500k"), "county-ny")
+    write(congressional_districts(state=NY, year=YEAR, cb=True, resolution="500k"), "cd-ny")
+    write(places(state=NY, year=YEAR, cb=True), "place-ny")
 
     print("new york city")
-    co = counties(state=NY, year=YEAR)
+    co = counties(state=NY, year=YEAR, cb=True, resolution="500k")
     nyc = co[co.COUNTYFP.isin(NYC_COUNTIES)]
     write(nyc, "borough")
 
+    # Spatial filtering uses the *water-inclusive* TIGER counties, never the
+    # trimmed cb ones. Filtering PUMAs against a shoreline-clipped borough
+    # dropped three of the 55 whose representative point sits over water —
+    # the mask defines "which features belong to NYC", not what gets drawn.
+    co_full = counties(state=NY, year=YEAR)
+    nyc_mask = co_full[co_full.COUNTYFP.isin(NYC_COUNTIES)]
+
     # PUMAs download statewide; keep the ~55 that sit inside the five boroughs.
-    write(within(pumas(state=NY, year=YEAR), nyc), "puma")
+    #
+    # No cb=True here: cartographic boundary PUMAs stop at 2019, and 2019 means
+    # 2010-vintage PUMA boundaries — a different set of shapes, not a cleaner
+    # version of these. Silently swapping vintages to get water trimming would
+    # be trading a cosmetic problem for a factual one. Stays raw TIGER until
+    # the DCP water-trimmed file replaces it.
+    write(within(pumas(state=NY, year=YEAR), nyc_mask), "puma")
 
     if NTA_URL and CDTA_URL:
         write(gpd.read_file(NTA_URL), "nta")
@@ -123,16 +156,19 @@ def main():
         print("  nta/cdta      skipped — set NTA_URL and CDTA_URL first")
 
     print("small areas")
-    manhattan = co[co.COUNTYFP == DEMO_COUNTY]
-    write(tracts(state=NY, county=DEMO_COUNTY, year=YEAR), "tract")
+    manhattan = co_full[co_full.COUNTYFP == DEMO_COUNTY]
+    write(tracts(state=NY, county=DEMO_COUNTY, year=YEAR, cb=True), "tract")
 
     # 2020 ZCTAs are published nationally only — no state subset exists. Pull
     # the generalised cartographic boundary version (a fraction of the full
     # file, and we simplify anyway) and clip to Manhattan.
     write(within(zctas(year=YEAR, cb=True), manhattan), "zcta")
 
-    write(block_groups(state=NY, county=DEMO_COUNTY, year=YEAR), "block-group")
+    write(block_groups(state=NY, county=DEMO_COUNTY, year=YEAR, cb=True), "block-group")
 
+    # No cb equivalent exists for blocks — this stays raw TIGER, water and all.
+    # The demo tract is inland so it doesn't show, but swap DEMO_TRACTS to a
+    # waterfront tract and you will see it.
     bl = blocks(state=NY, county=DEMO_COUNTY, year=YEAR)
     tract_col = pick(bl, "TRACTCE20", "TRACTCE10", "TRACTCE")
     bl = bl[bl[tract_col].isin(DEMO_TRACTS)]

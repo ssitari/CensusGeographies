@@ -128,14 +128,34 @@ async function draw(step, animate = true) {
     .on("mouseenter", (event, d) => showReadout(main.spec, d))
     .on("mouseleave", clearReadout);
 
-  entered
-    .merge(sel)
-    .attr("d", path)
-    .transition()
-    .duration(animate ? 500 : 0)
-    .style("opacity", 1);
+  const all = entered.merge(sel).attr("d", path);
+  all.transition().duration(animate ? 500 : 0).style("opacity", 1);
 
   document.getElementById("missing").hidden = true;
+  reportUnprojected(all, main);
+}
+
+// d3.geoAlbersUsa covers the lower 48, Alaska and Hawaii and returns null for
+// anything else, so Puerto Rico and the island areas vanish from the national
+// frames — 5 of the 56 state-equivalents. Dropping them silently would be a
+// lie of omission on a page whose subject is what counts as a state, so count
+// what failed to project and say so on the map.
+function reportUnprojected(selection, main) {
+  const el = document.getElementById("offmap");
+  const missed = [];
+  selection.each(function (d) {
+    if (!this.getAttribute("d")) missed.push(d.properties[main.spec.name]);
+  });
+
+  if (!missed.length) {
+    el.hidden = true;
+    return;
+  }
+  el.hidden = false;
+  el.innerHTML =
+    `<b>${missed.length} not shown</b> — this projection cannot place ` +
+    missed.slice(0, 6).join(", ") +
+    (missed.length > 6 ? `, and ${missed.length - 6} more` : "");
 }
 
 function renderMissing(step) {

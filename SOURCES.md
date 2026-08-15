@@ -25,6 +25,37 @@ Recorded because a couple of these will read as errors later if the reason
 isn't written down.
 
 - Everything is `year=2020` via `pygris`.
+- **Cartographic boundary files, not raw TIGER**, wherever they exist. TIGER
+  includes open water out to the legal boundary, which looks wrong at every
+  scale and is unusable for NYC. Measured effect on the boroughs:
+
+  | Borough | TIGER mi² | CB mi² | water removed |
+  |---|---|---|---|
+  | Richmond | 102.9 | 57.7 | 43.9% |
+  | Queens | 181.5 | 123.1 | 32.2% |
+  | Kings | 96.8 | 79.3 | 18.1% |
+  | Bronx | 57.4 | 47.5 | 17.1% |
+  | New York | 33.9 | 31.7 | 6.3% |
+
+  Manhattan's 6.3% is the tell: **cb clips to the outer coastline, not to local
+  shorelines**, so the Hudson out to the New Jersey line stays inside the
+  county. The NYC steps still want DCP's water-trimmed files.
+- **PUMAs stay raw TIGER.** Cartographic boundary PUMAs stop at 2019, and 2019
+  means 2010-vintage PUMAs — different shapes, not cleaner ones. Not worth
+  trading a cosmetic problem for a factual one.
+- **Blocks and roads have no cb equivalent** and stay raw TIGER. The demo tract
+  is inland so no water shows; a waterfront tract would.
+- **States are built at 1:5,000,000, not 1:20,000,000.** The 20m file omits
+  American Samoa, Guam, the Northern Marianas and the U.S. Virgin Islands —
+  52 features instead of 56.
+- **Only 51 of those 56 actually draw.** `d3.geoAlbersUsa` covers the lower 48,
+  Alaska and Hawaii and returns null elsewhere, so Puerto Rico and the island
+  areas cannot be placed. The app counts them and shows a notice on the map
+  rather than dropping them silently. If the states callout cites a count, say
+  which count it is.
+- **Spatial filters use water-inclusive TIGER masks**, never the trimmed cb
+  ones — filtering PUMAs against a shoreline-clipped borough silently dropped
+  3 of 55 whose representative point sits over water.
 - **Congressional districts: 27 features.** That is the 116th Congress, the
   districts in effect for the 2020 vintage. New York has had 26 districts since
   the 2022 redistricting. Either state the Congress explicitly in the callout
