@@ -59,6 +59,13 @@ NYBB_GPKG = SRC / "nycp_nybb_2023.gpkg"
 # treatment is consistent across every NYC layer.
 NYCT_GPKG = SRC / "cul_nyc_tracts_2020.gpkg"
 
+# Manhattan extracts of the citywide DCP block and Census block group files,
+# cut by scripts/extract_sources.py — 22.8 MB of source reduced to 2.6 MB with
+# no loss to anything the tour draws. Both measure 22.8 sq mi across Manhattan,
+# matching the tract and borough files, so water treatment stays consistent.
+NYCBG_GPKG = SRC / "nyc_blockgroups_manhattan.gpkg"
+NYCBL_GPKG = SRC / "nyc_blocks_manhattan.gpkg"
+
 
 def pick(gdf, *candidates):
     """First column that actually exists. TIGER suffixes the tabulation
@@ -255,15 +262,27 @@ def main():
     # file, and we simplify anyway) and clip to Manhattan.
     write(within(zctas(year=YEAR, cb=True), manhattan), "zcta")
 
-    write(block_groups(state=NY, county=DEMO_COUNTY, year=YEAR, cb=True), "block-group")
+    if NYCBG_GPKG.exists():
+        # 1,278 features against the Census cb file's 1,286: the difference is
+        # water-only block groups, which have no land and nothing to teach.
+        write(gpd.read_file(NYCBG_GPKG), "block-group")
+    else:
+        write(block_groups(state=NY, county=DEMO_COUNTY, year=YEAR, cb=True),
+              "block-group")
 
-    # No cb equivalent exists for blocks — this stays raw TIGER, water and all.
-    # The demo tract is inland so it doesn't show, but swap DEMO_TRACTS to a
-    # waterfront tract and you will see it.
-    bl = blocks(state=NY, county=DEMO_COUNTY, year=YEAR)
-    tract_col = pick(bl, "TRACTCE20", "TRACTCE10", "TRACTCE")
-    bl = bl[bl[tract_col].isin(DEMO_TRACTS)]
-    write(bl, "block")
+    if NYCBL_GPKG.exists():
+        bl = gpd.read_file(NYCBL_GPKG)
+        bl = bl[bl["CT2020"].isin(DEMO_TRACTS)].copy()
+        bl["NAME"] = "Block " + bl["CB2020"].astype(str)
+        write(bl, "block", id_col="GEOID", name_col="NAME")
+    else:
+        # Fallback is raw TIGER — no cb equivalent exists for blocks, so this
+        # branch carries water. The demo tract is inland so it does not show,
+        # but repoint DEMO_TRACTS at a waterfront tract and it will.
+        bl = blocks(state=NY, county=DEMO_COUNTY, year=YEAR)
+        tract_col = pick(bl, "TRACTCE20", "TRACTCE10", "TRACTCE")
+        bl = bl[bl[tract_col].isin(DEMO_TRACTS)]
+        write(bl, "block")
 
     # Streets, clipped to the block extent. Without these a block is an
     # unreadable blob; with them it is obviously a city block.

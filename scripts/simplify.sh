@@ -70,8 +70,9 @@ simplify nta          3%   nta
 echo "small areas"
 simplify tract        3%   tract
 simplify zcta         10%  zcta
-simplify block-group  25%  bg
-simplify block        40%  block
+# Also survey-grade rather than pre-generalized, hence the low percentages.
+simplify block-group  4%   bg
+simplify block        15%  block
 simplify roads        30%  roads
 
 echo

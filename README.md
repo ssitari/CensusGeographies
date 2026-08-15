@@ -53,6 +53,7 @@ fastest way to make an opaque identifier legible.
 | `app.js` | The engine — stepper, projections, rendering, GEOID readout |
 | `steps.js` | **All content.** The only file to edit when writing the tour |
 | `data.js` | Manifest mapping layer keys to TopoJSON files |
+| `scripts/extract_sources.py` | Cuts large citywide GeoPackages down to `sources/` |
 | `scripts/build_data.py` | Fetches boundaries via `pygris` → `data/_raw/*.geojson` |
 | `scripts/simplify.sh` | Simplifies and converts to `data/*.json` (TopoJSON) |
 | `scripts/check_data.mjs` | Validates the built data against `data.js` and `steps.js` |
@@ -219,8 +220,15 @@ federal `GEOID`, so tracts, NTAs, CDTAs and PUMAs are all dissolves of that one
 file. That keeps every NYC layer on identical geometry and reduces four
 citations to one.
 
-Census cb layers still in use for NYC — currently just block groups — carry
-open water. See [SOURCES.md](SOURCES.md) for the measurements.
+Block groups and blocks come from two further CUL/DCP files. Those arrive
+citywide and are cut to Manhattan by `scripts/extract_sources.py` before being
+committed — 22.8 MB reduced to 2.6 MB, with no loss to anything the tour draws.
+The committed extracts are therefore not the published files, which
+[SOURCES.md](SOURCES.md) records explicitly.
+
+Every NYC layer now measures 22.8 mi² across Manhattan — tracts, block groups,
+blocks and the borough file all agree — so no Census layer carrying open water
+remains inside the city.
 
 ### Written copy
 

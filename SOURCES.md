@@ -18,6 +18,8 @@ Quote verbatim where possible. Paraphrase drifts.
 |---|---|---|
 | NYC Boroughs 2023 (`sources/nycp_nybb_2023.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning, *New York City Boroughs, 2023*. Via Columbia University Libraries, [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023) |
 | NYC Census Tracts 2020 (`sources/cul_nyc_tracts_2020.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning and Columbia University Libraries, *New York City Census Tracts with Multiple Tract Identifiers, 2020*. [geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020) |
+| NYC Block Groups 2020 — **Manhattan extract** (`sources/nyc_blockgroups_manhattan.gpkg`) | Via Columbia University Libraries | Cut from `census_nyc_2020_blockgroups` by `scripts/extract_sources.py`. Confirm the catalog record before publishing a citation. |
+| NYC Blocks 2020 — **Manhattan extract** (`sources/nyc_blocks_manhattan.gpkg`) | Via Columbia University Libraries | Cut from `nycp_2020_blocks` (NYC DCP) by `scripts/extract_sources.py`. Confirm the catalog record before publishing a citation. |
 | Census TIGER/Line | Public domain — "Copyright protection is not available for any work of the United States Government (Title 17 U.S.C., Section 105)" | Cite the Bureau; trademark notice; conspicuous statement on repackaging — all in the page footer. [Tech doc ch. 1](https://www2.census.gov/geo/pdfs/maps-data/data/tiger/tgrshp2020/TGRSHP2020_TechDoc_Ch1.pdf) |
 | NYC Open Data | No warranty of "completeness, accuracy, content, or fitness for any particular purpose"; agencies may add terms | Confirm DCP's own terms before enabling the NTA/CDTA layers. [Overview](https://opendata.cityofnewyork.us/overview/) |
 
@@ -86,10 +88,36 @@ isn't written down.
   predates them. Only 8 of 55 codes overlap between the two sets. The DCP
   file's codes match TIGER 2022 and 2023 at 55 of 55. Everything else in the
   build is 2020 vintage, so the old layer was silently the odd one out.
-- **Block groups are still Census cb** and still carry water — 31.7 mi² against
-  Manhattan's actual 22.8 (+38.9%). The one remaining NYC layer to replace.
-  Not visually obvious, because water polygons fill the same colour as land —
-  trust the measurement, not the screenshot.
+- **Block groups and blocks now come from DCP/CUL too**, and every NYC layer
+  measures 22.8 mi² across Manhattan — tracts, block groups, blocks, and the
+  borough file all agree. No Census layer with water remains inside the city.
+  Block groups are 1,278 features against the Census cb file's 1,286; the
+  difference is water-only block groups, which have no land and nothing to
+  teach.
+- **The committed NYC block and block group files are extracts, not the
+  published files.** `scripts/extract_sources.py` cuts the citywide originals
+  to Manhattan: 22.8 MB reduced to 2.6 MB, with no loss to anything the tour
+  draws. Trimming does not change what the data is, but the committed file is
+  not the distributed one, and that should never be silently true.
+- **The DCP PUMA file is not used.** It measures 302.1 mi², identical to
+  dissolving the tract file on its own PUMA column, so the dissolve already
+  reproduces it and carries names the standalone file lacks.
+
+## Verified structure — checked 2026-08-15
+
+Computed from `sources/cul_nyc_tracts_2020.gpkg`, not recalled. These are the
+kind of claims a callout will want to make, so they are measured and dated.
+
+- **NTAs nest perfectly within CDTAs**: 0 of 262 NTAs span more than one CDTA.
+  CDTAs contain 1 to 9 NTAs, mean 3.7. So a CDTA is an aggregate of NTAs, which
+  are themselves aggregates of tracts.
+- **Two CDTAs cross borough lines**, which is why CDTA totals will not sum to
+  borough totals for the three boroughs involved:
+  - `BX08` Riverdale-Kingsbridge-Marble Hill — Bronx and Manhattan
+  - `QN01` Astoria-Queensbridge — Bronx and Queens
+- **NTAs do *not* nest within PUMAs**: 4 of 262 span a PUMA boundary
+  (`BK1502`, `BK1704`, `BX0702`, `BX0802`). Worth knowing before writing any
+  callout that implies the local and federal statistical geographies line up.
 - **Spatial filters use water-inclusive TIGER masks**, never the trimmed cb
   ones — filtering PUMAs against a shoreline-clipped borough silently dropped
   3 of 55 whose representative point sits over water.
