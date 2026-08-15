@@ -1,0 +1,16 @@
+{
+  "name": "census-geographies",
+  "version": "1.0.0",
+  "description": "A guided tour of U.S. census geographies, nation to block.",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "scripts": {
+    "build": "bash scripts/simplify.sh",
+    "check": "node scripts/check_data.mjs",
+    "serve": "python -m http.server 8000"
+  },
+  "devDependencies": {
+    "mapshaper": "^0.6.102"
+  }
+}

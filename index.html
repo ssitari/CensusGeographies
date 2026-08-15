@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Census Geographies — A Guided Tour</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #edecea;
+      color: #222;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 0 14px;
+      height: 44px;
+      background: #fff;
+      border-bottom: 0.5px solid #ddd;
+      flex-shrink: 0;
+    }
+    #toolbar h1 { font-size: 13px; font-weight: 600; white-space: nowrap; }
+    #toolbar .sub { font-size: 11px; color: #888; }
+
+    /* ── Stepper ── */
+    #stepper {
+      display: flex;
+      gap: 3px;
+      overflow-x: auto;
+      flex: 1;
+      scrollbar-width: none;
+    }
+    #stepper::-webkit-scrollbar { display: none; }
+    #stepper button {
+      font: inherit;
+      font-size: 11px;
+      padding: 4px 9px;
+      border: 0.5px solid #ddd;
+      background: #fff;
+      color: #666;
+      border-radius: 3px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    #stepper button:hover { background: #f4f3f1; }
+    #stepper button.emph { border-color: #bcc9d6; }
+    #stepper button.on { background: #2b4a6f; border-color: #2b4a6f; color: #fff; }
+
+    .navbtn {
+      font: inherit; font-size: 12px; width: 28px; height: 26px;
+      border: 0.5px solid #ddd; background: #fff; border-radius: 3px; cursor: pointer;
+    }
+    .navbtn:disabled { opacity: .35; cursor: default; }
+
+    /* ── Layout ── */
+    #main { flex: 1; display: flex; min-height: 0; }
+    #map-wrap { flex: 1; position: relative; min-width: 0; }
+    #map { width: 100%; height: 100%; display: block; }
+
+    #missing {
+      position: absolute; inset: 0; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 12px; color: #999; text-align: center; padding: 24px;
+    }
+
+    #readout {
+      position: absolute; left: 14px; bottom: 14px;
+      background: rgba(255,255,255,.94);
+      border: 0.5px solid #ddd; border-radius: 4px;
+      padding: 8px 10px; min-height: 0; pointer-events: none;
+      max-width: calc(100% - 28px);
+    }
+    #readout:empty { display: none; }
+    .ro-name { font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+    .ro-geoid { display: flex; gap: 2px; font-family: ui-monospace, 'SF Mono', Menlo, monospace; }
+    .chunk {
+      display: flex; flex-direction: column; align-items: center;
+      padding: 3px 5px; background: #f0efed; border-radius: 3px;
+    }
+    .chunk b { font-size: 13px; font-weight: 600; letter-spacing: .5px; }
+    .chunk i { font-size: 8.5px; font-style: normal; color: #888; text-transform: uppercase; letter-spacing: .4px; }
+    .chunk.unclaimed { background: #fdf0e4; }
+
+    /* ── Callout panel ── */
+    #callout {
+      width: 300px; flex-shrink: 0; background: #fff;
+      border-left: 0.5px solid #ddd; padding: 16px; overflow-y: auto;
+    }
+    #callout .step-count { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .6px; }
+    #callout h2 { font-size: 17px; font-weight: 600; margin: 3px 0 2px; }
+    #callout .scope { font-size: 11.5px; color: #888; margin-bottom: 9px; }
+
+    .tags { display: flex; gap: 5px; flex-wrap: wrap; margin-bottom: 10px; }
+    .tag {
+      font-size: 10px; padding: 2px 7px; border-radius: 10px;
+      text-transform: uppercase; letter-spacing: .4px; font-weight: 600;
+    }
+    .status-legal { background: #e3ecf5; color: #2b4a6f; }
+    .status-statistical { background: #eae7f2; color: #52447a; }
+    .status-locally { background: #f7ead9; color: #8a5a1f; }
+    .tag.key { background: #e6f0e8; color: #35603f; }
+
+    .nest-badge {
+      display: flex; gap: 4px; flex-wrap: wrap; align-items: center;
+      padding: 7px 0 0; border-top: 0.5px solid #eee; margin-top: 10px;
+    }
+    .nest-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .5px; }
+    .nest { font-size: 10.5px; padding: 2px 6px; border-radius: 3px; }
+    .nest.yes { background: #eef4ef; color: #35603f; }
+    .nest.no  { background: #fbeceb; color: #97382f; }
+
+    #callout dl { margin-top: 14px; }
+    .field { padding: 9px 0; border-top: 0.5px solid #f0efed; }
+    .field dt { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 3px; }
+    .field dd { font-size: 12.5px; line-height: 1.45; }
+    .todo { color: #c0392b; font-style: italic; opacity: .65; }
+
+    .source { display: inline-block; margin-top: 12px; font-size: 11px; color: #2b4a6f; }
+    span.source { color: #c0392b; opacity: .65; font-style: italic; }
+
+    /* ── Map marks ── */
+    .context { fill: #e2e0dd; stroke: #fff; stroke-width: .5px; }
+    .unit { fill: #b9cadd; stroke: #fff; stroke-width: .7px; cursor: pointer; }
+    .unit:hover { fill: #7d9dc0; }
+    .unit.no-nest { fill: none; stroke: #97382f; stroke-width: 1.4px; stroke-dasharray: 4 3; }
+    .unit.no-nest:hover { fill: rgba(151,56,47,.12); }
+    .unit.local-unit { fill: #e8c99a; stroke: #fff; }
+    .road { fill: none; stroke: #cfcdc9; stroke-width: .6px; }
+
+    /* ── Footer ── */
+    footer {
+      flex-shrink: 0; background: #fff; border-top: 0.5px solid #ddd;
+      padding: 6px 14px; font-size: 10.5px; color: #999;
+      display: flex; gap: 14px; justify-content: space-between;
+    }
+    footer a { color: #888; }
+
+    @media (max-width: 720px) {
+      #main { flex-direction: column; }
+      #callout { width: 100%; border-left: 0; border-top: 0.5px solid #ddd; max-height: 45%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toolbar">
+    <h1>Census Geographies</h1>
+    <button class="navbtn" id="prev" title="Previous (←)">‹</button>
+    <button class="navbtn" id="next" title="Next (→)">›</button>
+    <nav id="stepper"></nav>
+  </div>
+
+  <div id="main">
+    <div id="map-wrap">
+      <svg id="map"></svg>
+      <div id="missing" hidden></div>
+      <div id="readout"></div>
+    </div>
+    <aside id="callout"></aside>
+  </div>
+
+  <!--
+    The TIGER/Line/® statement below is not boilerplate. The Census Bureau
+    asks that any repackaging of TIGER/Line data carry a conspicuously placed
+    trademark and disclaimer statement "on the product's cover, the first page
+    of the website, or elsewhere of comparable visibility", and asks to be
+    cited as the source. Keep it visible on load — do not move it behind a
+    toggle. See README § Licensing and attribution.
+  -->
+  <footer>
+    <div class="foot-row" id="vintage"></div>
+    <div class="foot-row">
+      Boundaries derived from U.S. Census Bureau
+      <a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html" target="_blank" rel="noopener">TIGER/Line®</a>
+      Shapefiles (2020) and
+      <a href="https://www.nyc.gov/site/planning/data-maps/open-data.page" target="_blank" rel="noopener">NYC Department of City Planning</a>
+      open data. This product is not endorsed by, and uses TIGER/Line® only to
+      refer to the nature of the data; TIGER/Line® is a registered trademark of
+      the U.S. Census Bureau. Boundary information is for statistical tabulation
+      only and does not constitute a determination of jurisdictional authority
+      or legal land descriptions. No warranty is made as to accuracy.
+      <a href="https://github.com/ssitari/CensusGeographies" target="_blank" rel="noopener">Source code</a>
+      (MIT).
+    </div>
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,327 @@
+// ─────────────────────────────────────────────────────────────────────────────
+//  steps.js — ALL CONTENT LIVES HERE. This is the only file you need to edit.
+//  (app.js is the engine; leave it alone unless you're changing how the tool
+//  behaves rather than what it says.)
+//
+//  HOUSE RULE: never write a factual field from memory. Every `size`, `acs`,
+//  and `geoid` value must come from Census or DCP documentation, and the URL
+//  it came from goes in `source`. Log it in SOURCES.md at the same time.
+//  Anything not yet verified stays as the TODO sentinel — the app renders
+//  those visibly so unfinished copy can't quietly ship.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const TODO = "TODO";
+
+// Vintage stamp shown in the page footer. This is a teaching tool, not a data
+// browser: boundaries are illustrative and deliberately over-simplified.
+export const VINTAGE_NOTE =
+  "Boundaries shown are 2020-vintage and simplified for legibility. " +
+  "They illustrate the shape and scale of each geography, not its exact extent.";
+
+// Which levels the nesting badge reports against, in order.
+export const NEST_KEYS = ["nation", "state", "county", "tract"];
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  STEP SCHEMA
+//
+//  id        unique slug; also the deep link (#tract)
+//  label     what appears in the stepper and the callout header
+//  scope     short line under the label: where the camera is
+//  layer     key into DATA (see data.js manifest) — the geography being taught
+//  context   layer keys drawn beneath, dimmed, for orientation
+//  fit       layer key the camera fits to (defaults to `layer`)
+//  projection  "albers-usa" for the national frames, "local" once inside NY
+//  emphasis  true for the steps that matter most to a novice audience —
+//            the app gives these a fuller callout treatment
+//
+//  callout:
+//    status    "Legal" | "Statistical" | "Locally defined"
+//    nests     object keyed by NEST_KEYS; true = nests cleanly, false = crosses
+//              boundaries, null = not applicable at this level
+//    size      typical population / count range, VERBATIM from the source
+//    acs       which ACS products publish it
+//    geoid     { pattern, example, parts: [[label, chars], ...] }
+//    gotcha    ERIC WRITES THESE. The one thing people get wrong.
+//    source    URL the factual fields came from
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const STEPS = [
+  {
+    id: "nation",
+    label: "The Nation",
+    scope: "United States",
+    layer: "nation",
+    context: [],
+    projection: "albers-usa",
+    callout: {
+      status: "Legal",
+      nests: { nation: null, state: null, county: null, tract: null },
+      size: TODO,
+      acs: TODO,
+      // TIGER gives the nation feature the literal GEOID "US", not a digit.
+      geoid: { pattern: "US", example: "US", parts: [["nation", 2]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "region-division",
+    label: "Regions & Divisions",
+    scope: "United States",
+    layer: "division",
+    context: ["state"],
+    projection: "albers-usa",
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: null, county: null, tract: null },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "D", example: "1", parts: [["division", 1]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "state",
+    label: "States",
+    scope: "United States",
+    layer: "state",
+    context: [],
+    projection: "albers-usa",
+    callout: {
+      status: "Legal",
+      nests: { nation: true, state: null, county: null, tract: null },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "SS", example: "36", parts: [["state", 2]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+
+  // ── transition: the camera descends into New York and stays there ──────────
+  {
+    id: "new-york",
+    label: "New York State",
+    scope: "Our stage for everything below",
+    layer: "state-ny",
+    context: ["county-ny"],
+    projection: "local",
+    transition: true,
+    callout: {
+      status: "Legal",
+      nests: { nation: true, state: null, county: null, tract: null },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "SS", example: "36", parts: [["state", 2]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+
+  {
+    id: "congressional-district",
+    label: "Congressional Districts",
+    scope: "New York State",
+    layer: "cd-ny",
+    context: ["county-ny"],
+    projection: "local",
+    callout: {
+      status: "Legal",
+      nests: { nation: true, state: true, county: false, tract: null },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "SSDD", example: TODO, parts: [["state", 2], ["district", 2]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "place",
+    label: "Places",
+    scope: "New York State — several at once",
+    layer: "place-ny",
+    context: ["county-ny"],
+    projection: "local",
+    // Draw NYC, Buffalo and something small in the same frame: the scale range
+    // within a single geography type is the whole point of this step.
+    highlight: ["nyc", "buffalo", "small"],
+    callout: {
+      status: "Legal",
+      nests: { nation: true, state: true, county: false, tract: null },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "SSPPPPP", example: TODO, parts: [["state", 2], ["place", 5]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "county",
+    label: "Counties",
+    scope: "New York State",
+    layer: "county-ny",
+    context: ["state-ny"],
+    projection: "local",
+    callout: {
+      status: "Legal",
+      nests: { nation: true, state: true, county: null, tract: null },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+
+  // ── transition: the inversion. NYC is one place holding five counties. ─────
+  {
+    id: "nyc",
+    label: "New York City",
+    scope: "One place, five counties",
+    layer: "borough",
+    context: ["place-ny"],
+    projection: "local",
+    transition: true,
+    inversion: true, // app draws this one differently — see note in README
+    callout: {
+      status: "Legal",
+      nests: { nation: true, state: true, county: false, tract: null },
+      size: TODO,
+      acs: TODO,
+      // The units drawn here are the five counties, so the readout decomposes
+      // a county GEOID. That mismatch with the step's subject — NYC the
+      // *place* — is the lesson; say so in `gotcha`.
+      geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+
+  // ── the levels a novice actually needs (steps 9–14) ────────────────────────
+  {
+    id: "puma",
+    label: "PUMAs",
+    scope: "New York City",
+    layer: "puma",
+    context: ["borough"],
+    projection: "local",
+    emphasis: true,
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: true, county: false, tract: true },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "SSPPPPP", example: TODO, parts: [["state", 2], ["puma", 5]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "cdta-nta",
+    label: "CDTAs & NTAs",
+    scope: "New York City",
+    layer: "nta",
+    context: ["cdta", "borough"],
+    projection: "local",
+    emphasis: true,
+    local: true, // locally defined, not a Census product — app flags this
+    callout: {
+      status: "Locally defined",
+      nests: { nation: true, state: true, county: false, tract: true },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: TODO, example: TODO, parts: [] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "tract",
+    label: "Census Tracts",
+    scope: "Manhattan",
+    layer: "tract",
+    context: ["borough"],
+    projection: "local",
+    emphasis: true,
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: true, county: true, tract: null },
+      size: "1,200–8,000 people, with an optimum size of 4,000 people",
+      acs: TODO,
+      geoid: {
+        pattern: "SSCCCTTTTTT",
+        example: "36061014500",
+        parts: [["state", 2], ["county", 3], ["tract", 6]],
+      },
+      gotcha: TODO,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
+    },
+  },
+  {
+    id: "zcta",
+    label: "ZCTAs",
+    scope: "Manhattan — drawn over the tracts",
+    layer: "zcta",
+    context: ["tract"],
+    projection: "local",
+    emphasis: true,
+    // Deliberately drawn on top of the tract layer from the previous step:
+    // the contrast with something that *does* nest is the entire lesson.
+    overlayPrevious: true,
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: false, county: false, tract: false },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "ZZZZZ", example: TODO, parts: [["zcta", 5]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
+    id: "block-group",
+    label: "Block Groups",
+    scope: "Manhattan",
+    layer: "block-group",
+    context: ["tract"],
+    projection: "local",
+    emphasis: true,
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: true, county: true, tract: true },
+      size: "generally defined to contain between 600 and 3,000 people",
+      acs: TODO,
+      geoid: {
+        pattern: "SSCCCTTTTTTB",
+        example: TODO,
+        parts: [["state", 2], ["county", 3], ["tract", 6], ["bg", 1]],
+      },
+      gotcha: TODO,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
+    },
+  },
+  {
+    id: "block",
+    label: "Census Blocks",
+    scope: "One neighborhood",
+    layer: "block",
+    context: ["block-group", "roads"],
+    projection: "local",
+    emphasis: true,
+    basemap: "roads", // the one step where streets are required for sense
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: true, county: true, tract: true },
+      size: TODO,
+      acs: TODO,
+      geoid: {
+        pattern: "SSCCCTTTTTTBBBB",
+        example: TODO,
+        parts: [["state", 2], ["county", 3], ["tract", 6], ["block", 4]],
+      },
+      gotcha: TODO,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
+    },
+  },
+];

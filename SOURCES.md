@@ -1,0 +1,64 @@
+# Sources
+
+Every factual claim in `steps.js` gets a row here before it ships. If a field
+is filled in but has no row below, that's a bug — the whole point of this file
+is that a reader in 2030 can check whether a number is still true.
+
+Quote verbatim where possible. Paraphrase drifts.
+
+| Step | Field | Value as published | Source | Checked |
+|---|---|---|---|---|
+| tract | Typical size | "generally have a population size between 1,200 and 8,000 people, with an optimum size of 4,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
+| tract | Status | Statistical — "small, relatively permanent statistical subdivisions of a county or statistically equivalent entity" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
+| block-group | Typical size | "generally defined to contain between 600 and 3,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
+
+## Terms of use — checked 2026-08-15
+
+| Source | Status | Obligation |
+|---|---|---|
+| Census TIGER/Line | Public domain — "Copyright protection is not available for any work of the United States Government (Title 17 U.S.C., Section 105)" | Cite the Bureau; trademark notice; conspicuous statement on repackaging — all in the page footer. [Tech doc ch. 1](https://www2.census.gov/geo/pdfs/maps-data/data/tiger/tgrshp2020/TGRSHP2020_TechDoc_Ch1.pdf) |
+| NYC Open Data | No warranty of "completeness, accuracy, content, or fitness for any particular purpose"; agencies may add terms | Confirm DCP's own terms before enabling the NTA/CDTA layers. [Overview](https://opendata.cityofnewyork.us/overview/) |
+
+## Vintages actually built — checked 2026-08-15
+
+Recorded because a couple of these will read as errors later if the reason
+isn't written down.
+
+- Everything is `year=2020` via `pygris`.
+- **Congressional districts: 27 features.** That is the 116th Congress, the
+  districts in effect for the 2020 vintage. New York has had 26 districts since
+  the 2022 redistricting. Either state the Congress explicitly in the callout
+  or rebuild against a later vintage — but do not leave it ambiguous.
+- **ZCTAs are national-only for 2020.** No state subset is published; the build
+  pulls the generalized cartographic-boundary file and clips to Manhattan (69
+  features). This is the one layer where the download extent and the drawn
+  extent differ most.
+- **PUMAs: 55** inside the five boroughs, filtered spatially from 145 statewide.
+- **Blocks: 12**, all within Manhattan tract 014500, with 29 clipped road
+  segments. Swap `DEMO_TRACTS` in `build_data.py` to teach with a different one.
+
+## Still to source
+
+Everything else. The fields that most need care, roughly in order of how often
+they get stated wrong:
+
+- **ACS product coverage per level** — which levels appear in 1-year vs. 5-year
+  estimates, and the population threshold that governs it. This is the single
+  most common point of confusion and must be quoted, not remembered.
+- **PUMA minimum population** and how PUMAs relate to tracts.
+- **ZCTA construction** — how they are built from blocks, and why they are not
+  ZIP Codes.
+- **NTA / CDTA definitions** — from NYC DCP, not Census. Includes the caveat
+  that CDTAs cross borough boundaries for the Bronx, Queens and Manhattan, and
+  DCP's own note that NTAs are not intended to definitively represent
+  neighborhoods.
+- **Congressional district vintage** — which Congress the boundaries are for.
+  This one dates faster than anything else on the page.
+- **GEOID digit patterns** for every level except tract, block group and block.
+
+## Useful starting points
+
+- [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html)
+- [Geographic Areas Reference Manual (GARM)](https://www.census.gov/programs-surveys/geography/guidance/geographic-areas-reference-manual.html)
+- [Understanding Geographic Identifiers (GEOIDs)](https://www.census.gov/programs-surveys/geography/guidance/geo-identifiers.html)
+- [NYC Department of City Planning open data](https://www.nyc.gov/site/planning/data-maps/open-data.page)
