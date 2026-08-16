@@ -145,12 +145,16 @@ def aggregate(g, by, name_col, geoid=None):
     return out
 
 
-def write(gdf, name, id_col=None, name_col=None):
+def write(gdf, name, id_col=None, name_col=None, extra=None):
     """Reproject to WGS 84, normalise to GEOID/NAME, write GeoJSON.
 
     Everything downstream — data.js, the GEOID readout, simplify.sh — assumes
-    exactly two properties named GEOID and NAME. Normalising here means the
-    manifest stays honest and no layer needs a special case."""
+    two properties named GEOID and NAME. Normalising here means the manifest
+    stays honest and no layer needs a special case.
+
+    `extra` keeps additional columns for layers that need them. Currently only
+    the states, which carry STUSPS so the map can fall back to a postal
+    abbreviation where the full name will not fit inside the state."""
     gdf = gdf.to_crs(4326)
 
     id_col = id_col or pick(gdf, "GEOID", "GEOID20", "GEOID10")
@@ -162,8 +166,9 @@ def write(gdf, name, id_col=None, name_col=None):
     name_col = name_col or pick(gdf, "NAMELSAD", "NAMELSAD20", "NAMELSAD10",
                                 "NAME", "NAME20", "FULLNAME", id_col)
 
-    gdf = gdf[[id_col, name_col, "geometry"]].copy()
-    gdf.columns = ["GEOID", "NAME", "geometry"]
+    keep = [c for c in (extra or []) if c in gdf.columns]
+    gdf = gdf[[id_col, name_col] + keep + ["geometry"]].copy()
+    gdf.columns = ["GEOID", "NAME"] + keep + ["geometry"]
 
     OUT.mkdir(parents=True, exist_ok=True)
     gdf.to_file(OUT / f"{name}.geojson", driver="GeoJSON")
@@ -192,7 +197,7 @@ def main():
     # instead of 56. Losing the island areas from a tool that teaches what
     # counts as a state-equivalent would be the wrong trade for a smaller file.
     st = states(year=YEAR, cb=True, resolution="5m").to_crs(4326)
-    write(st, "state")
+    write(st, "state", extra=["STUSPS"])
 
     # Nation and divisions are dissolved from those same states rather than
     # downloaded separately. The published nation and division files are only

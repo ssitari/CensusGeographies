@@ -97,6 +97,12 @@ export const STEPS = [
     scope: "United States",
     layer: "state",
     context: [],
+    labels: ["state"],
+    // Every label must sit wholly inside its own state. Where a name will not
+    // fit, the postal abbreviation is used instead, and where even that will
+    // not fit the label is dropped — the same call a printed atlas makes for
+    // Rhode Island. Hovering still names any state.
+    labelFit: "inside",
     projection: "albers-usa",
     callout: {
       status: "Legal",
@@ -109,26 +115,26 @@ export const STEPS = [
     },
   },
 
-  // ── transition: the camera descends into New York and stays there ──────────
   {
-    id: "new-york",
-    label: "New York State",
-    scope: "Our stage for everything below",
-    layer: "state-ny",
-    context: ["county-ny"],
-    projection: "local",
+    id: "county",
+    label: "Counties",
+    scope: "New York State",
+    // First step in the local projection now that the New York State frame is
+    // gone: the camera descends straight from the national view to the counties.
     transition: true,
+    layer: "county-ny",
+    context: ["state-ny"],
+    projection: "local",
     callout: {
       status: "Legal",
-      nests: { nation: true, state: null, county: null, tract: null },
+      nests: { nation: true, state: true, county: null, tract: null },
       size: TODO,
       acs: TODO,
-      geoid: { pattern: "SS", example: "36", parts: [["state", 2]] },
+      geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
       gotcha: TODO,
       source: null,
     },
   },
-
   {
     id: "congressional-district",
     label: "Congressional Districts",
@@ -162,23 +168,6 @@ export const STEPS = [
       size: TODO,
       acs: TODO,
       geoid: { pattern: "SSPPPPP", example: TODO, parts: [["state", 2], ["place", 5]] },
-      gotcha: TODO,
-      source: null,
-    },
-  },
-  {
-    id: "county",
-    label: "Counties",
-    scope: "New York State",
-    layer: "county-ny",
-    context: ["state-ny"],
-    projection: "local",
-    callout: {
-      status: "Legal",
-      nests: { nation: true, state: true, county: null, tract: null },
-      size: TODO,
-      acs: TODO,
-      geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
       gotcha: TODO,
       source: null,
     },

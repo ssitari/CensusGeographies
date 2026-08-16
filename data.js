@@ -24,7 +24,9 @@ export const DATA = {
   nation:        { file: "national.json",     object: "nation",   id: ID,   name: NAME },
   region:        { file: "national.json",     object: "region",   id: ID,   name: NAME },
   division:      { file: "national.json",     object: "division", id: ID,   name: NAME },
-  state:         { file: "national.json",     object: "state",    id: ID,   name: NAME },
+  // `short` is a fallback label used when the full name will not fit inside
+  // the shape — only the states carry one.
+  state:         { file: "national.json",     object: "state",    id: ID,   name: NAME, short: "STUSPS" },
 
   "state-ny":    { file: "state-ny.json",     object: "state",    id: ID,   name: NAME },
   "county-ny":   { file: "county-ny.json",    object: "county",   id: ID,   name: NAME },

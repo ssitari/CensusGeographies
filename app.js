@@ -185,11 +185,11 @@ async function draw(step, animate = true) {
 // hierarchy is readable without a key: heavy dark outline and dark label are
 // the region, lighter teal outline and teal label are the division inside it.
 
-// Anchor a label to the centroid of the feature's *largest* polygon, measured
-// after projection. Whole-feature centroids drift into open water for anything
-// with islands, and in Albers USA the Pacific division would be dragged toward
-// Alaska — measuring projected area accounts for the composite's insets.
-function labelPoint(feature) {
+// Pick the feature's largest polygon, measured after projection. Whole-feature
+// centroids drift into open water for anything with islands, and in Albers USA
+// the Pacific division would be dragged toward Alaska — measuring projected
+// area accounts for the composite's insets.
+function largestPolygon(feature) {
   const g = feature.geometry;
   if (!g) return null;
   const polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates;
@@ -204,9 +204,103 @@ function labelPoint(feature) {
       best = poly;
     }
   }
-  if (!best) return null;
-  const c = path.centroid(best);
-  return Number.isNaN(c[0]) ? null : c;
+  return best;
+}
+
+// Project a polygon's rings to screen space: [outer, ...holes].
+function projectRings(poly) {
+  const rings = poly.coordinates.map((ring) =>
+    ring.map((c) => projection(c)).filter((p) => p && !Number.isNaN(p[0]))
+  );
+  return rings.filter((r) => r.length > 2);
+}
+
+function inside(pt, rings) {
+  if (!rings.length || !d3.polygonContains(rings[0], pt)) return false;
+  for (let i = 1; i < rings.length; i++) {
+    if (d3.polygonContains(rings[i], pt)) return false; // in a hole
+  }
+  return true;
+}
+
+function distToEdges(pt, rings) {
+  let min = Infinity;
+  for (const ring of rings) {
+    for (let i = 0, n = ring.length; i < n; i++) {
+      const a = ring[i];
+      const b = ring[(i + 1) % n];
+      const dx = b[0] - a[0];
+      const dy = b[1] - a[1];
+      const len = dx * dx + dy * dy;
+      let t = len ? ((pt[0] - a[0]) * dx + (pt[1] - a[1]) * dy) / len : 0;
+      t = Math.max(0, Math.min(1, t));
+      const cx = a[0] + t * dx - pt[0];
+      const cy = a[1] + t * dy - pt[1];
+      min = Math.min(min, Math.hypot(cx, cy));
+    }
+  }
+  return min;
+}
+
+// Pole of inaccessibility: the interior point furthest from any edge. A
+// centroid is the wrong anchor for a concave shape — Florida's lands in the
+// Gulf, Michigan's in the lake — so labels placed there straddle a boundary
+// or sit outside their own state. Coarse grid, then refine around the winner.
+function poleOfInaccessibility(rings) {
+  const xs = rings[0].map((p) => p[0]);
+  const ys = rings[0].map((p) => p[1]);
+  let x0 = Math.min(...xs), x1 = Math.max(...xs);
+  let y0 = Math.min(...ys), y1 = Math.max(...ys);
+
+  let best = null;
+  let bestD = -Infinity;
+
+  for (let pass = 0; pass < 3; pass++) {
+    const n = 12;
+    const sx = (x1 - x0) / n;
+    const sy = (y1 - y0) / n;
+    for (let i = 0; i <= n; i++) {
+      for (let j = 0; j <= n; j++) {
+        const pt = [x0 + i * sx, y0 + j * sy];
+        if (!inside(pt, rings)) continue;
+        const d = distToEdges(pt, rings);
+        if (d > bestD) {
+          bestD = d;
+          best = pt;
+        }
+      }
+    }
+    if (!best) return null;
+    // Tighten the window around the current best and go again.
+    x0 = best[0] - sx; x1 = best[0] + sx;
+    y0 = best[1] - sy; y1 = best[1] + sy;
+  }
+  return best ? { point: best, clearance: bestD, rings } : null;
+}
+
+function labelPoint(feature) {
+  const poly = largestPolygon(feature);
+  if (!poly) return null;
+  const rings = projectRings(poly);
+  if (!rings.length) return null;
+
+  const pole = poleOfInaccessibility(rings);
+  if (pole) return pole;
+
+  const c = path.centroid(poly);
+  return Number.isNaN(c[0]) ? null : { point: c, clearance: 0, rings };
+}
+
+// Every corner of the label box inside the polygon, plus the midpoints of the
+// long edges — corners alone let a narrow inlet cut under the middle of a word.
+function boxInside(b, rings) {
+  const mx = b.x + b.width / 2;
+  const pts = [
+    [b.x, b.y], [b.x + b.width, b.y],
+    [b.x, b.y + b.height], [b.x + b.width, b.y + b.height],
+    [mx, b.y], [mx, b.y + b.height],
+  ];
+  return pts.every((p) => inside(p, rings));
 }
 
 function overlaps(a, b, pad = 2) {
@@ -231,48 +325,61 @@ async function renderLabels(step) {
     const l = await layer(key);
     if (!l) continue;
 
+    // "inside" additionally requires the whole label to sit within its own
+    // polygon, so nothing straddles a boundary. Where the full name will not
+    // fit, fall back to the postal abbreviation, then give up — which is what
+    // a printed atlas does with Rhode Island.
+    const mustFitInside = step.labelFit === "inside";
+
     for (const f of l.features) {
-      const pt = labelPoint(f);
-      if (!pt) continue;
+      const anchor = labelPoint(f);
+      if (!anchor) continue;
+      const [px, py] = anchor.point;
 
-      const text = gLabels
-        .append("text")
-        .attr("class", `map-label lab-${key}`)
-        .attr("x", pt[0])
-        .attr("y", pt[1])
-        // Drop any "(Region)" suffix on the map — the region is labelled in
-        // its own colour a few pixels away, so repeating it on every division
-        // is noise. The hover readout keeps the full form, where there is no
-        // region label beside it to supply the context.
-        .text((f.properties[l.spec.name] || "").replace(/\s*\(.*\)$/, ""));
-
-      // Nudge vertically out of a collision; give up and drop the label rather
-      // than stack two strings on top of each other. Dropped labels are still
-      // reachable on hover.
       // getBBox returns an SVGRect, whose x/y/width/height live on the
       // prototype rather than as own properties — spreading it yields {} and
       // every collision test then compares against undefined and reports a
       // hit. Copy the fields explicitly.
-      const node = text.node();
       const rect = (r, dy = 0) => ({ x: r.x, y: r.y + dy, width: r.width, height: r.height });
-      let box = rect(node.getBBox());
-      let dy = 0;
-      const steps = [0, -12, 12, -24, 24, -36, 36];
-      let ok = false;
-      for (const d of steps) {
-        dy = d;
-        const test = rect(box, d);
-        if (!placed.some((p) => overlaps(test, p))) {
-          ok = true;
+
+      const full = (f.properties[l.spec.name] || "")
+        // Drop any "(Region)" suffix on the map — the region is labelled in
+        // its own colour a few pixels away, so repeating it on every division
+        // is noise. The hover readout keeps the full form, where there is no
+        // region label beside it to supply the context.
+        .replace(/\s*\(.*\)$/, "");
+      const short = l.spec.short ? f.properties[l.spec.short] : null;
+      const candidates = short && short !== full ? [full, short] : [full];
+
+      const text = gLabels
+        .append("text")
+        .attr("class", `map-label lab-${key}`)
+        .attr("x", px)
+        .attr("y", py);
+      const node = text.node();
+
+      let placedIt = false;
+
+      for (const candidate of candidates) {
+        text.text(candidate);
+        const box = rect(node.getBBox());
+
+        // Nudge vertically out of a collision; a label that still will not fit
+        // is dropped rather than stacked on another. Dropped labels remain
+        // reachable on hover.
+        for (const dy of [0, -11, 11, -22, 22, -33, 33]) {
+          const test = rect(box, dy);
+          if (placed.some((p) => overlaps(test, p))) continue;
+          if (mustFitInside && !boxInside(test, anchor.rings)) continue;
+          text.attr("y", py + dy);
+          placed.push(rect(node.getBBox()));
+          placedIt = true;
           break;
         }
+        if (placedIt) break;
       }
-      if (!ok) {
-        text.remove();
-        continue;
-      }
-      text.attr("y", pt[1] + dy);
-      placed.push(rect(node.getBBox()));
+
+      if (!placedIt) text.remove();
     }
   }
 }
