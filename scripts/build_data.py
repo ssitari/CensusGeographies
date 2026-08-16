@@ -34,10 +34,13 @@ YEAR = 2020
 NY = "36"
 NYC_COUNTIES = ["005", "047", "061", "081", "085"]  # Bronx, Kings, NY, Queens, Richmond
 
-# The one neighbourhood that gets blocks and streets. Manhattan tract 014500
-# is a placeholder — swap in whichever tract you want to teach with.
+# The one neighbourhood that gets blocks and streets. Tract 020500 is
+# Morningside Heights, the same ground the PUMA, NTA, ZCTA and tract steps all
+# frame — so the tour descends through one place rather than jumping at the
+# end. Swap in another tract to teach somewhere else; nothing else needs to
+# change, though the highlighted ids in steps.js would.
 DEMO_COUNTY = "061"
-DEMO_TRACTS = ["014500"]
+DEMO_TRACTS = ["020500"]
 
 # Population for incorporated places, April 2020 estimates base. The Census
 # API now requires a key, but this file is a plain keyless download, and the

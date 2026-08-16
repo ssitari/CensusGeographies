@@ -384,11 +384,21 @@ export const STEPS = [
   {
     id: "block-group",
     label: "Block Groups",
-    scope: "Manhattan",
+    scope: "Tract 205 and its neighbours",
     layer: "block-group",
     context: ["tract"],
     projection: "local",
     emphasis: true,
+    // Closer than the tract step: framed on tract 205 itself, so its three
+    // block groups are the subject and the surrounding tracts give context.
+    fit: "tract",
+    fitIds: ["36061020500"],
+    fitPad: 0.45,
+    // Block group 1 is 60 acres against about 4 each for the other two — the
+    // same tract split very unevenly, which is worth a sentence about why
+    // block groups are sized by population rather than area.
+    highlight: ["360610205001"],
+    labels: ["block-group"],
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: true },
@@ -396,7 +406,7 @@ export const STEPS = [
       acs: TODO,
       geoid: {
         pattern: "SSCCCTTTTTTB",
-        example: "360610183007",
+        example: "360610205001",
         parts: [["state", 2], ["county", 3], ["tract", 6], ["bg", 1]],
       },
       gotcha: TODO,
@@ -406,11 +416,14 @@ export const STEPS = [
   {
     id: "block",
     label: "Census Blocks",
-    scope: "One neighborhood",
+    scope: "Inside tract 205",
     layer: "block",
     context: ["block-group", "roads"],
     projection: "local",
     emphasis: true,
+    // Fits its own blocks, which are now only tract 205's — the last frame of
+    // a descent that has stayed on one neighbourhood since the PUMA step.
+    fitPad: 0.8,
     basemap: "roads", // the one step where streets are required for sense
     callout: {
       status: "Statistical",
@@ -419,7 +432,7 @@ export const STEPS = [
       acs: TODO,
       geoid: {
         pattern: "SSCCCTTTTTTBBBB",
-        example: "360610145004002",
+        example: "360610205001000",
         parts: [["state", 2], ["county", 3], ["tract", 6], ["block", 4]],
       },
       gotcha: TODO,
