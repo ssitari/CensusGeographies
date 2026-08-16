@@ -24,7 +24,7 @@ so the vintage is pinned and labelled rather than chased.
 import pathlib
 import geopandas as gpd
 from pygris import (
-    nation, divisions, states, counties, places,
+    regions, divisions, states, counties, places,
     congressional_districts, pumas, tracts, block_groups, blocks,
     zctas, roads,
 )
@@ -205,25 +205,37 @@ def main():
     nat["NAME"] = "United States"
     write(nat, "nation", id_col="GEOID", name_col="NAME")
 
-    # Division membership by spatial join, not a hard-coded state list. The
-    # join assigns 51 of the 56: the five territories match nothing, because
-    # they genuinely belong to no region or division. That is a fact about
-    # census geography rather than a bug, so the layer keeps 9 divisions
-    # covering the 50 states and DC, and the territories simply have no
-    # division to belong to.
-    dv = (divisions(year=YEAR, resolution="20m")[["GEOID", "NAME", "geometry"]]
-          .rename(columns={"GEOID": "DIV", "NAME": "DIVNAME"}).to_crs(4326))
+    # Region and division membership by spatial join, not hard-coded state
+    # lists. Each join assigns 51 of the 56: the five territories match
+    # nothing, because they genuinely belong to no region or division. That is
+    # a fact about census geography rather than a bug.
     pts = st.copy()
     pts["geometry"] = st.representative_point()
-    j = gpd.sjoin(pts, dv, predicate="within", how="left")
 
-    assigned = st.loc[j.DIV.notna().values].copy()
-    assigned["DIV"] = j.loc[j.DIV.notna(), "DIV"].values
-    assigned["DIVNAME"] = j.loc[j.DIV.notna(), "DIVNAME"].values
-    div = assigned.dissolve(by="DIV", aggfunc="first").reset_index()
-    print(f"  (divisions: {len(div)} from {len(assigned)} states; "
-          f"{len(st) - len(assigned)} territories belong to none)")
-    write(div, "division", id_col="DIV", name_col="DIVNAME")
+    def assign(parent, code, label):
+        p = (parent[["GEOID", "NAME", "geometry"]]
+             .rename(columns={"GEOID": code, "NAME": label}).to_crs(4326))
+        j = gpd.sjoin(pts, p, predicate="within", how="left")
+        out = st.loc[j[code].notna().values].copy()
+        out[code] = j.loc[j[code].notna(), code].values
+        out[label] = j.loc[j[code].notna(), label].values
+        return out
+
+    rg = assign(regions(year=YEAR, resolution="20m"), "REG", "REGNAME")
+    region = rg.dissolve(by="REG", aggfunc="first").reset_index()
+    write(region, "region", id_col="REG", name_col="REGNAME")
+
+    dv = assign(divisions(year=YEAR, resolution="20m"), "DIV", "DIVNAME")
+    # Carry the region through onto each division, so the hover readout says
+    # "New England (Northeast)". Region boundaries are drawn on the map too,
+    # but naming them here means the answer is available on any single click
+    # rather than only by reading line weights.
+    dv = dv.merge(rg[["GEOID", "REGNAME"]], on="GEOID", how="left")
+    div = dv.dissolve(by="DIV", aggfunc="first").reset_index()
+    div["LABEL"] = div["DIVNAME"] + " (" + div["REGNAME"] + ")"
+    print(f"  (regions: {len(region)}, divisions: {len(div)}, from "
+          f"{len(dv)} states; {len(st) - len(dv)} territories belong to none)")
+    write(div, "division", id_col="DIV", name_col="LABEL")
 
     print("new york state")
     # 500k for the New York frames — 20m is too coarse once the camera descends.

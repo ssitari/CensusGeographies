@@ -153,7 +153,11 @@
     }
     /* ...and the units underneath take a heavier, darker edge, so the step's
        own geography stays the bolder of the two lines. */
-    .layer-main.has-overlay .unit { stroke: #47688f; stroke-width: 1.5px; }
+    .layer-main.has-overlay .unit { stroke: #47688f; stroke-width: 1.2px; }
+    /* Regions are the coarsest partition on the division step, so they get the
+       heaviest line. Weight, not colour, carries the hierarchy: state → division
+       → region reads as thin-white, medium-navy, heavy-navy. */
+    .ov-region { stroke: #21374f; stroke-width: 2.6px; stroke-opacity: .95; }
 
     /* ── Footer ── */
     footer {

@@ -17,7 +17,9 @@ const gRoads = svg.append("g").attr("class", "layer-roads");
 // them.
 const gOverlay = svg.append("g").attr("class", "layer-overlay");
 
-const cache = new Map();
+const cache = new Map(); // layer key -> {spec, features}
+const files = new Map(); // file name -> parsed topojson, so the four national
+                         // layers sharing one archive fetch it once
 let current = 0;
 let width = 0;
 let height = 0;
@@ -45,11 +47,19 @@ async function layer(key) {
   if (cache.has(key)) return cache.get(key);
 
   const spec = DATA[key];
-  const promise = fetch(`data/${spec.file}`)
-    .then((r) => {
-      if (!r.ok) throw new Error(r.status);
-      return r.json();
-    })
+
+  if (!files.has(spec.file)) {
+    files.set(
+      spec.file,
+      fetch(`data/${spec.file}`).then((r) => {
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
+    );
+  }
+
+  const promise = files
+    .get(spec.file)
     .then((topo) => {
       const obj = topo.objects[spec.object];
       if (!obj) throw new Error(`no object "${spec.object}" in ${spec.file}`);

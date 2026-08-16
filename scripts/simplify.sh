@@ -43,10 +43,28 @@ simplify () {
   echo "  $(printf '%-14s' "$name") $(du -h "$OUT/$name.json" | cut -f1)"
 }
 
-echo "national"
-simplify nation       1%   nation
-simplify division     1%   division
-simplify state        1.5% state
+# The national frames are simplified together, into one file, on purpose.
+#
+# Nation, region and division are all dissolved from the same states, so their
+# boundaries are the same lines. Simplified as separate files they stop being
+# the same lines: each gets its own vertex removal and, worse, its own
+# quantization grid derived from its own bounding box. The result is a national
+# outline that misses the state coastline by a pixel or two and division edges
+# that drift off the states they are made of.
+#
+# combine-files loads all four into a single dataset, so mapshaper builds one
+# shared arc table. A boundary between two divisions is then literally one arc,
+# simplified once, quantized once, and shared by every layer that uses it.
+echo "national (shared topology)"
+"$MAPSHAPER" \
+  "$RAW/nation.geojson" "$RAW/region.geojson" \
+  "$RAW/division.geojson" "$RAW/state.geojson" \
+  combine-files \
+  -simplify 1.5% keep-shapes target=* \
+  -clean target=* \
+  -o "$OUT/national.json" format=topojson id-field=GEOID quantization=1e5 \
+  >/dev/null 2>&1
+echo "  $(printf '%-14s' national.json) $(du -h "$OUT/national.json" | cut -f1)"
 
 echo "new york"
 simplify state-ny     3%   state

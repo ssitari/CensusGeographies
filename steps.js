@@ -69,11 +69,14 @@ export const STEPS = [
     label: "Regions & Divisions",
     scope: "United States",
     layer: "division",
-    // State lines drawn over the divisions, not under them: students recognise
-    // state shapes, and reading a division as "these states together" is the
-    // whole point of the step.
+    // Three levels in one frame, ordered by weight so they stay separable:
+    // faint white state lines (recognisable shapes to read the rest through),
+    // medium division edges, heavy region boundaries on top. Without the
+    // region lines the step names something the map never shows.
+    // Division labels also carry their region — "New England (Northeast)" —
+    // so a single hover answers it without decoding line weights.
     context: [],
-    overlay: ["state"],
+    overlay: ["state", "region"],
     projection: "albers-usa",
     callout: {
       status: "Statistical",

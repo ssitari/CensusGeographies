@@ -115,6 +115,9 @@ kind of claims a callout will want to make, so they are measured and dated.
   borough totals for the three boroughs involved:
   - `BX08` Riverdale-Kingsbridge-Marble Hill — Bronx and Manhattan
   - `QN01` Astoria-Queensbridge — Bronx and Queens
+- **4 regions, 9 divisions**, both dissolved from the 5m states and assigned by
+  spatial join. Regions: West 13 states, South 17 (incl. DC), Midwest 12,
+  Northeast 9.
 - **The five territories belong to no region or division.** Assigning states to
   divisions by spatial join matches 51 of 56; American Samoa, Guam, the
   Northern Marianas, Puerto Rico and the U.S. Virgin Islands match nothing.

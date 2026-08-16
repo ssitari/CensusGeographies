@@ -17,9 +17,14 @@ const ID = "GEOID";
 const NAME = "NAME";
 
 export const DATA = {
-  nation:        { file: "nation.json",       object: "nation",   id: ID,   name: NAME },
-  division:      { file: "division.json",     object: "division", id: ID,   name: NAME },
-  state:         { file: "state.json",        object: "state",    id: ID,   name: NAME },
+  // All four share one file, and that is load-bearing rather than tidiness:
+  // they are dissolved from the same geometry, so they must be simplified and
+  // quantized as one topology or their shared edges stop lining up. See the
+  // note at the top of scripts/simplify.sh.
+  nation:        { file: "national.json",     object: "nation",   id: ID,   name: NAME },
+  region:        { file: "national.json",     object: "region",   id: ID,   name: NAME },
+  division:      { file: "national.json",     object: "division", id: ID,   name: NAME },
+  state:         { file: "national.json",     object: "state",    id: ID,   name: NAME },
 
   "state-ny":    { file: "state-ny.json",     object: "state",    id: ID,   name: NAME },
   "county-ny":   { file: "county-ny.json",    object: "county",   id: ID,   name: NAME },
