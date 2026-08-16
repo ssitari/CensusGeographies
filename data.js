@@ -40,7 +40,7 @@ export const DATA = {
   // not compete for label space.
   "county-metro":{ file: "county-metro.json", object: "county",   id: ID,   name: NAME },
   "place-metro": { file: "place-metro.json",  object: "place",    id: ID,   name: NAME,
-                   labelWhen: (p) => p.LSAD !== "57" },
+                   labelWhen: (p) => p.LSAD !== "57", popProp: "POP" },
 
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },
   puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME },

@@ -20,6 +20,7 @@ Quote verbatim where possible. Paraphrase drifts.
 | NYC Census Tracts 2020 (`sources/cul_nyc_tracts_2020.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning and Columbia University Libraries, *New York City Census Tracts with Multiple Tract Identifiers, 2020*. [geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020) |
 | NYC Block Groups 2020 — **Manhattan extract** (`sources/nyc_blockgroups_manhattan.gpkg`) | Via Columbia University Libraries | Cut from `census_nyc_2020_blockgroups` by `scripts/extract_sources.py`. Confirm the catalog record before publishing a citation. |
 | NYC Blocks 2020 — **Manhattan extract** (`sources/nyc_blocks_manhattan.gpkg`) | Via Columbia University Libraries | Cut from `nycp_2020_blocks` (NYC DCP) by `scripts/extract_sources.py`. Confirm the catalog record before publishing a citation. |
+| Place population (`sub-est2024.csv`) | Public domain (U.S. Government work) | U.S. Census Bureau, *Subcounty Resident Population Estimates*, vintage 2024. Column `ESTIMATESBASE2020` = the April 1, 2020 estimates base. [Direct download](https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/cities/totals/sub-est2024.csv) |
 | Census TIGER/Line | Public domain — "Copyright protection is not available for any work of the United States Government (Title 17 U.S.C., Section 105)" | Cite the Bureau; trademark notice; conspicuous statement on repackaging — all in the page footer. [Tech doc ch. 1](https://www2.census.gov/geo/pdfs/maps-data/data/tiger/tgrshp2020/TGRSHP2020_TechDoc_Ch1.pdf) |
 | NYC Open Data | No warranty of "completeness, accuracy, content, or fitness for any particular purpose"; agencies may add terms | Confirm DCP's own terms before enabling the NTA/CDTA layers. [Overview](https://opendata.cityofnewyork.us/overview/) |
 
@@ -102,6 +103,18 @@ isn't written down.
 - **The DCP PUMA file is not used.** It measures 302.1 mi², identical to
   dissolving the tract file on its own PUMA column, so the dissolve already
   reproduces it and carries names the standalone file lacks.
+
+- **Place population comes from the estimates series, not the API.** The Census
+  API now returns "Missing Key" for keyless requests, so population is read
+  from the subcounty estimates CSV, which is a plain download. The field used
+  is `ESTIMATESBASE2020` — the April 1, 2020 base, i.e. the 2020 census count
+  carried into the estimates series, which is the right vintage for a tour
+  pinned to 2020. Covers incorporated places (SUMLEV 162) only: 595 in New
+  York. CDPs have no population here, and are not labelled anyway.
+- **New York city 8,805,594; Yonkers 211,575.** Those are the only two places
+  in the metro at or above 200,000, which is what the Places step labels. Next
+  largest in the metro is New Rochelle at 79,751, so the threshold has a wide
+  margin before it starts adding labels.
 
 ## Verified structure — checked 2026-08-15
 

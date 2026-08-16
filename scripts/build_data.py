@@ -25,7 +25,7 @@ import pathlib
 import geopandas as gpd
 from pygris import (
     regions, divisions, states, counties, places,
-    metro_divisions,
+    core_based_statistical_areas,
     congressional_districts, pumas, tracts, block_groups, blocks,
     zctas, roads,
 )
@@ -38,6 +38,14 @@ NYC_COUNTIES = ["005", "047", "061", "081", "085"]  # Bronx, Kings, NY, Queens, 
 # is a placeholder — swap in whichever tract you want to teach with.
 DEMO_COUNTY = "061"
 DEMO_TRACTS = ["014500"]
+
+# Population for incorporated places, April 2020 estimates base. The Census
+# API now requires a key, but this file is a plain keyless download, and the
+# estimates base is the 2020 census count carried into the estimates series —
+# the right vintage for a tour pinned to 2020. Covers incorporated places
+# (SUMLEV 162) only, not CDPs, which is all the map labels anyway.
+POPEST_URL = ("https://www2.census.gov/programs-surveys/popest/datasets/"
+              "2020-2024/cities/totals/sub-est2024.csv")
 
 # --- UNVERIFIED: confirm both against https://www.nyc.gov/site/planning/data-maps/open-data.page
 NTA_URL = None   # 2020 Neighborhood Tabulation Areas
@@ -66,6 +74,17 @@ NYCT_GPKG = SRC / "cul_nyc_tracts_2020.gpkg"
 # matching the tract and borough files, so water treatment stays consistent.
 NYCBG_GPKG = SRC / "nyc_blockgroups_manhattan.gpkg"
 NYCBL_GPKG = SRC / "nyc_blocks_manhattan.gpkg"
+
+
+def place_population():
+    """GEOID -> POP for New York incorporated places."""
+    import pandas as pd
+    d = pd.read_csv(POPEST_URL, encoding="latin-1", dtype=str)
+    d = d[(d.STNAME == "New York") & (d.SUMLEV == "162")].copy()
+    d["GEOID"] = d.STATE + d.PLACE
+    d["POP"] = pd.to_numeric(d.ESTIMATESBASE2020, errors="coerce").astype("Int64")
+    print(f"  (population: {len(d)} incorporated places)")
+    return d[["GEOID", "POP"]]
 
 
 def pick(gdf, *candidates):
@@ -266,20 +285,16 @@ def main():
     # still spans New York City against small villages, which is the range the
     # step exists to show.
     #
-    # The metro *division* containing Manhattan, not the whole CBSA. The
-    # New York-Newark-Jersey City CBSA runs east to Montauk, which pushes the
-    # city into a corner of the frame and fills the rest with the East End.
-    # The division stops at the Nassau line and keeps the city central.
-    #
-    # Found by point-in-polygon rather than by matching the name, because
-    # metro names get restyled between vintages and geometry does not.
-    cbsa = metro_divisions(year=YEAR).to_crs(4326)
+    # The whole CBSA containing Manhattan, Long Island included. Found by
+    # point-in-polygon rather than by matching the name, because metro names get
+    # restyled between vintages and geometry does not.
+    cbsa = core_based_statistical_areas(year=YEAR, cb=True).to_crs(4326)
     manhattan_pt = (co_full[co_full.COUNTYFP == DEMO_COUNTY]
                     .to_crs(4326).representative_point().iloc[0])
     here = cbsa[cbsa.contains(manhattan_pt)]
     if len(here) != 1:
-        raise RuntimeError(f"expected one metro division over Manhattan, got {len(here)}")
-    print(f"  (metro: {here.iloc[0]['NAMELSAD']})")
+        raise RuntimeError(f"expected one CBSA over Manhattan, got {len(here)}")
+    print(f"  (metro: {here.iloc[0]['NAME']})")
 
     pl = places(state=NY, year=YEAR, cb=True).to_crs(4326)
     # Only the New York side: the division reaches into New Jersey,
@@ -290,7 +305,8 @@ def main():
     # convenience, not a municipality, and several on Long Island are large in
     # area while barely populated — ranking labels without excluding them puts
     # Calverton on the map ahead of Yonkers.
-    write(within(pl, here), "place-metro", extra=["LSAD"])
+    pl = pl.merge(place_population(), on="GEOID", how="left")
+    write(within(pl, here), "place-metro", extra=["LSAD", "POP"])
 
     # Counties clipped to the same division, used as the backdrop for that step.
     # Drawing all 62 would leave Nassau and Suffolk sitting there in grey with

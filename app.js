@@ -335,9 +335,14 @@ async function renderLabels(step) {
     // a crowded frame labels the major municipalities rather than whichever
     // hamlet happened to come first in the file. With `labelMax` this is what
     // makes "label the larger ones" work without needing a population cut-off.
-    const eligible = l.spec.labelWhen
-      ? l.features.filter((f) => l.spec.labelWhen(f.properties))
-      : l.features;
+    const eligible = l.features.filter((f) => {
+      if (l.spec.labelWhen && !l.spec.labelWhen(f.properties)) return false;
+      if (step.labelMinPop) {
+        const pop = +f.properties[l.spec.popProp];
+        if (!Number.isFinite(pop) || pop < step.labelMinPop) return false;
+      }
+      return true;
+    });
 
     const ranked = eligible
       .map((f) => ({ f, anchor: labelPoint(f) }))
@@ -445,8 +450,15 @@ function showReadout(spec, feature) {
   const raw = spec.id ? feature.properties[spec.id] : null;
   const name = feature.properties[spec.name];
 
+  // Where a layer carries population, show it — the readout is the one place
+  // in the tour with room for an actual number rather than a description.
+  const pop = spec.popProp ? +feature.properties[spec.popProp] : NaN;
+  const popLine = Number.isFinite(pop)
+    ? `<div class="ro-pop">${pop.toLocaleString()} people <span>2020 estimates base</span></div>`
+    : "";
+
   if (!raw) {
-    box.innerHTML = name ? `<div class="ro-name">${name}</div>` : "";
+    box.innerHTML = name ? `<div class="ro-name">${name}</div>${popLine}` : "";
     return;
   }
 
@@ -468,6 +480,7 @@ function showReadout(spec, feature) {
 
   box.innerHTML =
     `<div class="ro-name">${name || ""}</div>` +
+    popLine +
     `<div class="ro-geoid">${chunks}${tail}</div>`;
 }
 

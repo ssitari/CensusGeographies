@@ -168,12 +168,18 @@ export const STEPS = [
     // scale is an unreadable stipple. The metro still puts New York City beside
     // small villages, which is the range this step exists to show.
     //
-    // Labels are placed largest-first and capped, which labels the major
-    // municipalities without needing a population cut-off to decide. No
-    // "inside" requirement here, unlike the states: a place at metro scale is
-    // far too small to hold its own name, so the label sits over it instead.
+    // Only places at least as populous as Yonkers get a label, which in this
+    // metro means New York City and Yonkers and nothing else. Long Island is
+    // in frame precisely so the reader can see how many places go unlabelled:
+    // a legible map of a few named cities reads better here than a hundred
+    // village names, and the point of the step is what a "place" is, not an
+    // inventory of them.
+    //
+    // Yonkers is 211,575, so 200,000 makes it the smallest labelled place.
+    // Nothing else in the metro falls between the two — the next is New
+    // Rochelle at 79,751 — so lower this number to add more.
     labels: ["place-metro"],
-    labelMax: 22,
+    labelMinPop: 200000,
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: false, tract: null },
