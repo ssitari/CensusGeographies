@@ -145,6 +145,15 @@
     .unit.no-nest:hover { fill: rgba(151,56,47,.12); }
     .unit.local-unit { fill: #e8c99a; stroke: #fff; }
     .road { fill: none; stroke: #cfcdc9; stroke-width: .6px; }
+    /* Reference boundaries over the units — present enough to read a familiar
+       shape through, faint enough not to compete with what the step is about. */
+    .overlay-line {
+      fill: none; stroke: #fff; stroke-width: .6px;
+      stroke-opacity: .5; pointer-events: none;
+    }
+    /* ...and the units underneath take a heavier, darker edge, so the step's
+       own geography stays the bolder of the two lines. */
+    .layer-main.has-overlay .unit { stroke: #47688f; stroke-width: 1.5px; }
 
     /* ── Footer ── */
     footer {

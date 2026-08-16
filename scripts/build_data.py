@@ -186,14 +186,44 @@ def main():
     # resolution but no cb flag. Blocks and roads have no cb equivalent at all.
 
     print("national frames")
-    write(nation(year=YEAR, resolution="20m"), "nation")
-    write(divisions(year=YEAR, resolution="20m"), "division")
 
     # 5m, not 20m: the 1:20,000,000 state file drops American Samoa, Guam, the
     # Northern Mariana Islands and the U.S. Virgin Islands, leaving 52 features
     # instead of 56. Losing the island areas from a tool that teaches what
     # counts as a state-equivalent would be the wrong trade for a smaller file.
-    write(states(year=YEAR, cb=True, resolution="5m"), "state")
+    st = states(year=YEAR, cb=True, resolution="5m").to_crs(4326)
+    write(st, "state")
+
+    # Nation and divisions are dissolved from those same states rather than
+    # downloaded separately. The published nation and division files are only
+    # offered at 1:20m, so mixing them with 5m states made the coastline visibly
+    # coarsen as the tour moved between steps, and left slivers where a
+    # dissolved edge disagreed with the state boundary next to it. Dissolving
+    # guarantees the three layers share an outline exactly.
+    nat = st.dissolve().reset_index(drop=True)
+    nat["GEOID"] = "US"
+    nat["NAME"] = "United States"
+    write(nat, "nation", id_col="GEOID", name_col="NAME")
+
+    # Division membership by spatial join, not a hard-coded state list. The
+    # join assigns 51 of the 56: the five territories match nothing, because
+    # they genuinely belong to no region or division. That is a fact about
+    # census geography rather than a bug, so the layer keeps 9 divisions
+    # covering the 50 states and DC, and the territories simply have no
+    # division to belong to.
+    dv = (divisions(year=YEAR, resolution="20m")[["GEOID", "NAME", "geometry"]]
+          .rename(columns={"GEOID": "DIV", "NAME": "DIVNAME"}).to_crs(4326))
+    pts = st.copy()
+    pts["geometry"] = st.representative_point()
+    j = gpd.sjoin(pts, dv, predicate="within", how="left")
+
+    assigned = st.loc[j.DIV.notna().values].copy()
+    assigned["DIV"] = j.loc[j.DIV.notna(), "DIV"].values
+    assigned["DIVNAME"] = j.loc[j.DIV.notna(), "DIVNAME"].values
+    div = assigned.dissolve(by="DIV", aggfunc="first").reset_index()
+    print(f"  (divisions: {len(div)} from {len(assigned)} states; "
+          f"{len(st) - len(assigned)} territories belong to none)")
+    write(div, "division", id_col="DIV", name_col="DIVNAME")
 
     print("new york state")
     # 500k for the New York frames — 20m is too coarse once the camera descends.

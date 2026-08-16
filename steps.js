@@ -69,7 +69,11 @@ export const STEPS = [
     label: "Regions & Divisions",
     scope: "United States",
     layer: "division",
-    context: ["state"],
+    // State lines drawn over the divisions, not under them: students recognise
+    // state shapes, and reading a division as "these states together" is the
+    // whole point of the step.
+    context: [],
+    overlay: ["state"],
     projection: "albers-usa",
     callout: {
       status: "Statistical",

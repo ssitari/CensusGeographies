@@ -115,6 +115,14 @@ kind of claims a callout will want to make, so they are measured and dated.
   borough totals for the three boroughs involved:
   - `BX08` Riverdale-Kingsbridge-Marble Hill — Bronx and Manhattan
   - `QN01` Astoria-Queensbridge — Bronx and Queens
+- **The five territories belong to no region or division.** Assigning states to
+  divisions by spatial join matches 51 of 56; American Samoa, Guam, the
+  Northern Marianas, Puerto Rico and the U.S. Virgin Islands match nothing.
+  That is a fact about census geography, not a gap in the data, and it is the
+  same five that `d3.geoAlbersUsa` cannot draw. Division counts by name:
+  South Atlantic 9, Mountain 8, West North Central 7, New England 6, East North
+  Central 5, Pacific 5, East South Central 4, West South Central 4, Middle
+  Atlantic 3.
 - **NTAs do *not* nest within PUMAs**: 4 of 262 span a PUMA boundary
   (`BK1502`, `BK1704`, `BX0702`, `BX0802`). Worth knowing before writing any
   callout that implies the local and federal statistical geographies line up.

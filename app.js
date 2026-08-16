@@ -10,6 +10,12 @@ const svg = d3.select("#map");
 const gContext = svg.append("g").attr("class", "layer-context");
 const gMain = svg.append("g").attr("class", "layer-main");
 const gRoads = svg.append("g").attr("class", "layer-roads");
+// Reference boundaries drawn *above* the units. Context sits underneath and
+// gets covered by filled shapes, which is wrong when the reference is what
+// orients the reader — state lines under the divisions being the case in
+// point, since students recognise state shapes and read the divisions through
+// them.
+const gOverlay = svg.append("g").attr("class", "layer-overlay");
 
 const cache = new Map();
 let current = 0;
@@ -139,6 +145,24 @@ async function draw(step, animate = true) {
 
   const all = entered.merge(sel).attr("d", path);
   all.transition().duration(animate ? 500 : 0).style("opacity", 1);
+
+  gOverlay.selectAll("path").remove();
+  // When a reference layer is drawn on top, the units underneath need a
+  // stronger edge or the two read as one undifferentiated mesh — the division
+  // boundaries have to be obviously the bolder of the two.
+  gMain.classed("has-overlay", !!(step.overlay || []).length);
+
+  for (const key of step.overlay || []) {
+    const ov = await layer(key);
+    if (!ov) continue;
+    gOverlay
+      .selectAll(`path.ov-${key}`)
+      .data(ov.features)
+      .enter()
+      .append("path")
+      .attr("class", `overlay-line ov-${key}`)
+      .attr("d", path);
+  }
 
   document.getElementById("missing").hidden = true;
   reportUnprojected(all, main);
