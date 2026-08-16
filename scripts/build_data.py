@@ -25,6 +25,7 @@ import pathlib
 import geopandas as gpd
 from pygris import (
     regions, divisions, states, counties, places,
+    metro_divisions,
     congressional_districts, pumas, tracts, block_groups, blocks,
     zctas, roads,
 )
@@ -243,6 +244,10 @@ def main():
     write(div, "division", id_col="DIV", name_col="LABEL")
 
     print("new york state")
+    # Water-inclusive counties, used throughout as the mask for "which features
+    # belong here" — never as something drawn. See the note at the boroughs.
+    co_full = counties(state=NY, year=YEAR)
+
     # 500k for the New York frames — 20m is too coarse once the camera descends.
     ny = states(year=YEAR, cb=True, resolution="500k")
     write(ny[ny.GEOID == NY], "state-ny")
@@ -256,7 +261,43 @@ def main():
     cd = congressional_districts(state=NY, year=YEAR, cb=True, resolution="500k")
     cd["SHORT"] = cd["GEOID"].map(lambda g: f"{usps.get(g[:2], g[:2])}-{g[2:]}")
     write(cd, "cd-ny", extra=["SHORT"])
-    write(places(state=NY, year=YEAR, cb=True), "place-ny")
+    # Places are drawn for the New York metro area rather than the whole state.
+    # All 1,293 NY places at state scale is an unreadable stipple; the metro
+    # still spans New York City against small villages, which is the range the
+    # step exists to show.
+    #
+    # The metro *division* containing Manhattan, not the whole CBSA. The
+    # New York-Newark-Jersey City CBSA runs east to Montauk, which pushes the
+    # city into a corner of the frame and fills the rest with the East End.
+    # The division stops at the Nassau line and keeps the city central.
+    #
+    # Found by point-in-polygon rather than by matching the name, because
+    # metro names get restyled between vintages and geometry does not.
+    cbsa = metro_divisions(year=YEAR).to_crs(4326)
+    manhattan_pt = (co_full[co_full.COUNTYFP == DEMO_COUNTY]
+                    .to_crs(4326).representative_point().iloc[0])
+    here = cbsa[cbsa.contains(manhattan_pt)]
+    if len(here) != 1:
+        raise RuntimeError(f"expected one metro division over Manhattan, got {len(here)}")
+    print(f"  (metro: {here.iloc[0]['NAMELSAD']})")
+
+    pl = places(state=NY, year=YEAR, cb=True).to_crs(4326)
+    # Only the New York side: the division reaches into New Jersey,
+    # but this layer holds New York places, and an empty New Jersey beside a
+    # dense New York would read as missing data rather than as a state line.
+    # LSAD is kept so the map can label incorporated municipalities (25 city,
+    # 47 village) and leave the CDPs unlabelled. A CDP is a statistical
+    # convenience, not a municipality, and several on Long Island are large in
+    # area while barely populated — ranking labels without excluding them puts
+    # Calverton on the map ahead of Yonkers.
+    write(within(pl, here), "place-metro", extra=["LSAD"])
+
+    # Counties clipped to the same division, used as the backdrop for that step.
+    # Drawing all 62 would leave Nassau and Suffolk sitting there in grey with
+    # no places inside them, which reads as missing data rather than as an
+    # extent that stops at the county line.
+    write(within(counties(state=NY, year=YEAR, cb=True, resolution="500k"), here),
+          "county-metro")
 
     print("new york city")
     co = counties(state=NY, year=YEAR, cb=True, resolution="500k")
@@ -265,7 +306,6 @@ def main():
     # trimmed ones. Filtering PUMAs against a shoreline-clipped borough
     # dropped three of the 55 whose representative point sits over water —
     # the mask defines "which features belong to NYC", not what gets drawn.
-    co_full = counties(state=NY, year=YEAR)
     nyc_mask = co_full[co_full.COUNTYFP.isin(NYC_COUNTIES)]
 
     write(boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full),

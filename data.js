@@ -34,7 +34,13 @@ export const DATA = {
   // labelled "NY-01" on the map — the form anyone looking one up will have
   // seen — while the readout keeps the full "Congressional District 1".
   "cd-ny":       { file: "cd-ny.json",        object: "cd",       id: ID,   name: NAME, labelProp: "SHORT" },
-  "place-ny":    { file: "place-ny.json",     object: "place",    id: ID,   name: NAME },
+  // `labelWhen` filters which features are eligible for a map label without
+  // affecting what is drawn. Places include CDPs (LSAD 57), which are
+  // statistical areas rather than municipalities; they stay on the map but do
+  // not compete for label space.
+  "county-metro":{ file: "county-metro.json", object: "county",   id: ID,   name: NAME },
+  "place-metro": { file: "place-metro.json",  object: "place",    id: ID,   name: NAME,
+                   labelWhen: (p) => p.LSAD !== "57" },
 
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },
   puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME },

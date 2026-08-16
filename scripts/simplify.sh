@@ -70,7 +70,8 @@ echo "new york"
 simplify state-ny     3%   state
 simplify county-ny    4%   county
 simplify cd-ny        4%   cd
-simplify place-ny     3%   place
+simplify county-metro 4%   county
+simplify place-metro  4%   place
 
 echo "new york city"
 # 1.5%, far below the others: the DCP borough file is a survey-grade boundary

@@ -160,13 +160,20 @@ export const STEPS = [
   {
     id: "place",
     label: "Places",
-    scope: "New York State — several at once",
-    layer: "place-ny",
-    context: ["county-ny"],
+    scope: "New York metropolitan area",
+    layer: "place-metro",
+    context: ["county-metro"],
     projection: "local",
-    // Draw NYC, Buffalo and something small in the same frame: the scale range
-    // within a single geography type is the whole point of this step.
-    highlight: ["nyc", "buffalo", "small"],
+    // Zoomed to the metro rather than the whole state: 1,293 places at state
+    // scale is an unreadable stipple. The metro still puts New York City beside
+    // small villages, which is the range this step exists to show.
+    //
+    // Labels are placed largest-first and capped, which labels the major
+    // municipalities without needing a population cut-off to decide. No
+    // "inside" requirement here, unlike the states: a place at metro scale is
+    // far too small to hold its own name, so the label sits over it instead.
+    labels: ["place-metro"],
+    labelMax: 22,
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: false, tract: null },

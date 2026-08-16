@@ -204,7 +204,7 @@ function largestPolygon(feature) {
       best = poly;
     }
   }
-  return best;
+  return best ? { poly: best, area: bestArea } : null;
 }
 
 // Project a polygon's rings to screen space: [outer, ...holes].
@@ -279,16 +279,16 @@ function poleOfInaccessibility(rings) {
 }
 
 function labelPoint(feature) {
-  const poly = largestPolygon(feature);
-  if (!poly) return null;
-  const rings = projectRings(poly);
+  const big = largestPolygon(feature);
+  if (!big) return null;
+  const rings = projectRings(big.poly);
   if (!rings.length) return null;
 
   const pole = poleOfInaccessibility(rings);
-  if (pole) return pole;
+  if (pole) return { ...pole, area: big.area };
 
-  const c = path.centroid(poly);
-  return Number.isNaN(c[0]) ? null : { point: c, clearance: 0, rings };
+  const c = path.centroid(big.poly);
+  return Number.isNaN(c[0]) ? null : { point: c, clearance: 0, rings, area: big.area };
 }
 
 // Every corner of the label box inside the polygon, plus the midpoints of the
@@ -331,9 +331,22 @@ async function renderLabels(step) {
     // a printed atlas does with Rhode Island.
     const mustFitInside = step.labelFit === "inside";
 
-    for (const f of l.features) {
-      const anchor = labelPoint(f);
-      if (!anchor) continue;
+    // Largest first, so the biggest feature gets first claim on the space and
+    // a crowded frame labels the major municipalities rather than whichever
+    // hamlet happened to come first in the file. With `labelMax` this is what
+    // makes "label the larger ones" work without needing a population cut-off.
+    const eligible = l.spec.labelWhen
+      ? l.features.filter((f) => l.spec.labelWhen(f.properties))
+      : l.features;
+
+    const ranked = eligible
+      .map((f) => ({ f, anchor: labelPoint(f) }))
+      .filter((d) => d.anchor)
+      .sort((a, b) => b.anchor.area - a.anchor.area);
+
+    let count = 0;
+    for (const { f, anchor } of ranked) {
+      if (step.labelMax && count >= step.labelMax) break;
       const [px, py] = anchor.point;
 
       // getBBox returns an SVGRect, whose x/y/width/height live on the
@@ -378,6 +391,7 @@ async function renderLabels(step) {
           text.attr("y", py + dy);
           placed.push(rect(node.getBBox()));
           placedIt = true;
+          count++;
           break;
         }
         if (placedIt) break;
