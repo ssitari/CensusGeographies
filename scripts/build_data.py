@@ -247,7 +247,15 @@ def main():
     ny = states(year=YEAR, cb=True, resolution="500k")
     write(ny[ny.GEOID == NY], "state-ny")
     write(counties(state=NY, year=YEAR, cb=True, resolution="500k"), "county-ny")
-    write(congressional_districts(state=NY, year=YEAR, cb=True, resolution="500k"), "cd-ny")
+
+    # Congressional districts get a SHORT label in the conventional "NY-01"
+    # form, which is what anyone looking one up will have seen. The state
+    # abbreviation comes from the states table rather than a literal, so
+    # repointing NY at another state does not silently mislabel every district.
+    usps = dict(zip(st["GEOID"], st["STUSPS"]))
+    cd = congressional_districts(state=NY, year=YEAR, cb=True, resolution="500k")
+    cd["SHORT"] = cd["GEOID"].map(lambda g: f"{usps.get(g[:2], g[:2])}-{g[2:]}")
+    write(cd, "cd-ny", extra=["SHORT"])
     write(places(state=NY, year=YEAR, cb=True), "place-ny")
 
     print("new york city")

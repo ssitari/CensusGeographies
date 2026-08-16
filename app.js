@@ -342,7 +342,11 @@ async function renderLabels(step) {
       // hit. Copy the fields explicitly.
       const rect = (r, dy = 0) => ({ x: r.x, y: r.y + dy, width: r.width, height: r.height });
 
-      const full = (f.properties[l.spec.name] || "")
+      // A layer may name a property it prefers on the map (districts read as
+      // "NY-01" rather than "Congressional District 1"); otherwise the label
+      // is the same NAME the readout shows.
+      const preferred = l.spec.labelProp ? f.properties[l.spec.labelProp] : null;
+      const full = (preferred || f.properties[l.spec.name] || "")
         // Drop any "(Region)" suffix on the map — the region is labelled in
         // its own colour a few pixels away, so repeating it on every division
         // is noise. The hover readout keeps the full form, where there is no

@@ -30,7 +30,10 @@ export const DATA = {
 
   "state-ny":    { file: "state-ny.json",     object: "state",    id: ID,   name: NAME },
   "county-ny":   { file: "county-ny.json",    object: "county",   id: ID,   name: NAME },
-  "cd-ny":       { file: "cd-ny.json",        object: "cd",       id: ID,   name: NAME },
+  // `labelProp` is the property the map label prefers over NAME. Districts are
+  // labelled "NY-01" on the map — the form anyone looking one up will have
+  // seen — while the readout keeps the full "Congressional District 1".
+  "cd-ny":       { file: "cd-ny.json",        object: "cd",       id: ID,   name: NAME, labelProp: "SHORT" },
   "place-ny":    { file: "place-ny.json",     object: "place",    id: ID,   name: NAME },
 
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },

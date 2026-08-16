@@ -141,7 +141,12 @@
     .context { fill: #e2e0dd; stroke: #fff; stroke-width: .5px; }
     .unit { fill: #b9cadd; stroke: #fff; stroke-width: .7px; cursor: pointer; }
     .unit:hover { fill: #7d9dc0; }
-    .unit.no-nest { fill: none; stroke: #97382f; stroke-width: 1.4px; stroke-dasharray: 4 3; }
+    /* Solid, not dashed. Adjacent units share a boundary but each polygon is
+       stroked separately, so their dash phases disagree along the shared edge
+       and the line breaks up unevenly — worst where districts are numerous and
+       intricate. The red outline against the filled blue of a nesting geography
+       carries the distinction without the dashes. */
+    .unit.no-nest { fill: none; stroke: #97382f; stroke-width: 1.4px; }
     .unit.no-nest:hover { fill: rgba(151,56,47,.12); }
     .unit.local-unit { fill: #e8c99a; stroke: #fff; }
     .road { fill: none; stroke: #cfcdc9; stroke-width: .6px; }
@@ -172,6 +177,8 @@
        they take the unit colour. Smaller than the division labels because there
        are 56 of them competing for the same frame. */
     .lab-state { fill: #2b4a6f; font-size: 9.5px; font-weight: 600; stroke-width: 2.5px; }
+    /* Same red as the district outline, so the label reads as belonging to it. */
+    .lab-cd-ny { fill: #97382f; font-size: 9.5px; font-weight: 600; stroke-width: 2.5px; }
 
     /* ── Footer ── */
     footer {
