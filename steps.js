@@ -257,7 +257,7 @@ export const STEPS = [
     },
   },
   {
-    id: "cdta-nta",
+    id: "nta-cdta",
     // Named in pane order — NTAs left, CDTAs right — so the heading reads the
     // same way the map does.
     label: "NTAs and CDTAs",
