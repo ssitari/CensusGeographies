@@ -77,6 +77,9 @@ export const STEPS = [
     // so a single hover answers it without decoding line weights.
     context: [],
     overlay: ["state", "region"],
+    // Region first: earlier entries win the space when two labels collide, so
+    // a division is what gets nudged, never a region.
+    labels: ["region", "division"],
     projection: "albers-usa",
     callout: {
       status: "Statistical",

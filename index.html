@@ -151,13 +151,23 @@
       fill: none; stroke: #fff; stroke-width: .6px;
       stroke-opacity: .5; pointer-events: none;
     }
-    /* ...and the units underneath take a heavier, darker edge, so the step's
-       own geography stays the bolder of the two lines. */
-    .layer-main.has-overlay .unit { stroke: #47688f; stroke-width: 1.2px; }
-    /* Regions are the coarsest partition on the division step, so they get the
-       heaviest line. Weight, not colour, carries the hierarchy: state → division
-       → region reads as thin-white, medium-navy, heavy-navy. */
-    .ov-region { stroke: #21374f; stroke-width: 2.6px; stroke-opacity: .95; }
+    /* Two boundary types, two colours, and the labels take the colour of their
+       own boundary — so the hierarchy is legible without a legend. Neither
+       colour reuses the red of "crosses boundaries" or the amber of "locally
+       defined", which already mean something else in this palette. */
+    .layer-main.has-overlay .unit { stroke: #1d7f96; stroke-width: 1.9px; }
+    .ov-region { stroke: #12314c; stroke-width: 3px; stroke-opacity: .95; }
+
+    .map-label {
+      text-anchor: middle; dominant-baseline: middle; pointer-events: none;
+      paint-order: stroke; stroke: #fff; stroke-width: 3px;
+      stroke-linejoin: round; font-family: inherit;
+    }
+    .lab-region {
+      fill: #12314c; font-size: 12.5px; font-weight: 700;
+      letter-spacing: 1.1px; text-transform: uppercase;
+    }
+    .lab-division { fill: #14697d; font-size: 10.5px; font-weight: 600; }
 
     /* ── Footer ── */
     footer {

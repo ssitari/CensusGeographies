@@ -16,6 +16,7 @@ const gRoads = svg.append("g").attr("class", "layer-roads");
 // point, since students recognise state shapes and read the divisions through
 // them.
 const gOverlay = svg.append("g").attr("class", "layer-overlay");
+const gLabels = svg.append("g").attr("class", "layer-labels");
 
 const cache = new Map(); // layer key -> {spec, features}
 const files = new Map(); // file name -> parsed topojson, so the four national
@@ -176,6 +177,104 @@ async function draw(step, animate = true) {
 
   document.getElementById("missing").hidden = true;
   reportUnprojected(all, main);
+  await renderLabels(step);
+}
+
+// ── map labels ───────────────────────────────────────────────────────────────
+// Labels are keyed to their boundary's colour rather than to a legend, so the
+// hierarchy is readable without a key: heavy dark outline and dark label are
+// the region, lighter teal outline and teal label are the division inside it.
+
+// Anchor a label to the centroid of the feature's *largest* polygon, measured
+// after projection. Whole-feature centroids drift into open water for anything
+// with islands, and in Albers USA the Pacific division would be dragged toward
+// Alaska — measuring projected area accounts for the composite's insets.
+function labelPoint(feature) {
+  const g = feature.geometry;
+  if (!g) return null;
+  const polys = g.type === "Polygon" ? [g.coordinates] : g.coordinates;
+
+  let best = null;
+  let bestArea = -Infinity;
+  for (const coordinates of polys) {
+    const poly = { type: "Polygon", coordinates };
+    const area = path.area(poly);
+    if (area > bestArea) {
+      bestArea = area;
+      best = poly;
+    }
+  }
+  if (!best) return null;
+  const c = path.centroid(best);
+  return Number.isNaN(c[0]) ? null : c;
+}
+
+function overlaps(a, b, pad = 2) {
+  return !(
+    a.x + a.width + pad < b.x ||
+    b.x + b.width + pad < a.x ||
+    a.y + a.height + pad < b.y ||
+    b.y + b.height + pad < a.y
+  );
+}
+
+async function renderLabels(step) {
+  gLabels.selectAll("*").remove();
+  const keys = step.labels || [];
+  if (!keys.length) return;
+
+  const placed = [];
+
+  // Earlier keys win the space they want. Listing region before division in
+  // steps.js therefore means a region label is never the one nudged aside.
+  for (const key of keys) {
+    const l = await layer(key);
+    if (!l) continue;
+
+    for (const f of l.features) {
+      const pt = labelPoint(f);
+      if (!pt) continue;
+
+      const text = gLabels
+        .append("text")
+        .attr("class", `map-label lab-${key}`)
+        .attr("x", pt[0])
+        .attr("y", pt[1])
+        // Drop any "(Region)" suffix on the map — the region is labelled in
+        // its own colour a few pixels away, so repeating it on every division
+        // is noise. The hover readout keeps the full form, where there is no
+        // region label beside it to supply the context.
+        .text((f.properties[l.spec.name] || "").replace(/\s*\(.*\)$/, ""));
+
+      // Nudge vertically out of a collision; give up and drop the label rather
+      // than stack two strings on top of each other. Dropped labels are still
+      // reachable on hover.
+      // getBBox returns an SVGRect, whose x/y/width/height live on the
+      // prototype rather than as own properties — spreading it yields {} and
+      // every collision test then compares against undefined and reports a
+      // hit. Copy the fields explicitly.
+      const node = text.node();
+      const rect = (r, dy = 0) => ({ x: r.x, y: r.y + dy, width: r.width, height: r.height });
+      let box = rect(node.getBBox());
+      let dy = 0;
+      const steps = [0, -12, 12, -24, 24, -36, 36];
+      let ok = false;
+      for (const d of steps) {
+        dy = d;
+        const test = rect(box, d);
+        if (!placed.some((p) => overlaps(test, p))) {
+          ok = true;
+          break;
+        }
+      }
+      if (!ok) {
+        text.remove();
+        continue;
+      }
+      text.attr("y", pt[1] + dy);
+      placed.push(rect(node.getBBox()));
+    }
+  }
 }
 
 // d3.geoAlbersUsa covers the lower 48, Alaska and Hawaii and returns null for
