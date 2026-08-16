@@ -424,6 +424,11 @@ export const STEPS = [
     // Fits its own blocks, which are now only tract 205's — the last frame of
     // a descent that has stayed on one neighbourhood since the PUMA step.
     fitPad: 0.8,
+    // Block 1011, inside block group 1 of tract 205 — the block group spotlit
+    // on the previous step. The spotlight has followed the same ground down
+    // every level from the PUMA, and this is where it stops.
+    highlight: ["360610205001011"],
+    labels: ["block"],
     basemap: "roads", // the one step where streets are required for sense
     callout: {
       status: "Statistical",
@@ -432,7 +437,7 @@ export const STEPS = [
       acs: TODO,
       geoid: {
         pattern: "SSCCCTTTTTTBBBB",
-        example: "360610205001000",
+        example: "360610205001011",
         parts: [["state", 2], ["county", 3], ["tract", 6], ["block", 4]],
       },
       gotcha: TODO,
