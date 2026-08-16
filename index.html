@@ -165,6 +165,13 @@
     /* A called-out unit: same hue, enough darker to find at a glance without
        introducing another colour with its own meaning. */
     .unit.spotlight { fill: #5b7fa6; }
+    /* An outline geography spotlit keeps its interior visible: ZCTAs are drawn
+       unfilled so the tracts underneath show through, and filling the
+       highlight would hide the comparison it exists to make. */
+    .unit.no-nest.spotlight {
+      fill: rgba(91,127,166,.28); stroke: #2b4a6f; stroke-width: 2.6px;
+    }
+    .unit.no-nest.spotlight:hover { fill: rgba(91,127,166,.4); }
     .unit.spotlight:hover { fill: #4a6d94; }
     .road { fill: none; stroke: #cfcdc9; stroke-width: .6px; }
     /* Reference boundaries over the units — present enough to read a familiar
@@ -196,6 +203,7 @@
     .lab-state { fill: #2b4a6f; font-size: 9.5px; font-weight: 600; stroke-width: 2.5px; }
     /* Same red as the outline of a geography that crosses boundaries, so the
        label reads as belonging to it. */
+    .lab-zcta,
     .lab-cdta,
     .lab-nta,
     .lab-puma { fill: #24435f; font-size: 10.5px; font-weight: 700; }

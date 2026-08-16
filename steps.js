@@ -318,6 +318,38 @@ export const STEPS = [
     },
   },
   {
+    id: "zcta",
+    label: "ZCTAs",
+    scope: "Morningside Heights and around",
+    layer: "zcta",
+    context: ["tract"],
+    projection: "local",
+    // Same ground as the two steps before it, so this is the fourth different
+    // way of cutting up one neighbourhood rather than a new place.
+    fit: "puma",
+    fitIds: ["3604109"],
+    fitPad: 0.55,
+    // 10027 covers Morningside Heights and Manhattanville. Spotlit like the
+    // PUMA and the NTA before it, but translucent rather than solid — the
+    // tract boundaries underneath are the point of the comparison, and a
+    // filled highlight would hide exactly the thing worth seeing.
+    highlight: ["10027"],
+    labels: ["zcta"],
+    emphasis: true,
+    // Deliberately drawn on top of the tract layer from the previous step:
+    // the contrast with something that *does* nest is the entire lesson.
+    overlayPrevious: true,
+    callout: {
+      status: "Statistical",
+      nests: { nation: true, state: false, county: false, tract: false },
+      size: TODO,
+      acs: TODO,
+      geoid: { pattern: "ZZZZZ", example: "10027", parts: [["zcta", 5]] },
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
     id: "tract",
     label: "Census Tracts",
     scope: "Manhattan",
@@ -337,27 +369,6 @@ export const STEPS = [
       },
       gotcha: TODO,
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
-    },
-  },
-  {
-    id: "zcta",
-    label: "ZCTAs",
-    scope: "Manhattan — drawn over the tracts",
-    layer: "zcta",
-    context: ["tract"],
-    projection: "local",
-    emphasis: true,
-    // Deliberately drawn on top of the tract layer from the previous step:
-    // the contrast with something that *does* nest is the entire lesson.
-    overlayPrevious: true,
-    callout: {
-      status: "Statistical",
-      nests: { nation: true, state: false, county: false, tract: false },
-      size: TODO,
-      acs: TODO,
-      geoid: { pattern: "ZZZZZ", example: "10003", parts: [["zcta", 5]] },
-      gotcha: TODO,
-      source: null,
     },
   },
   {
