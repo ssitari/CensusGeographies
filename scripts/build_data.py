@@ -370,8 +370,13 @@ def main():
 
         write(aggregate(nyct, "NTA2020", "NTAName"), "nta",
               id_col="GEOID", name_col="NAME")
-        write(aggregate(nyct, "CDTA2020", "CDTANAME"), "cdta",
-              id_col="GEOID", name_col="NAME")
+        cdta = aggregate(nyct, "CDTA2020", "CDTANAME")
+        # CDTANAME is "MN09 Morningside Heights-Hamilton Heights (CD 9
+        # Equivalent)". The map wants just the neighbourhood part: the pane is
+        # already titled CDTAs and the readout carries the code, so repeating
+        # it in the label only costs width.
+        cdta["SHORT"] = cdta["NAME"].str.replace(r"^[A-Z]{2}\d{2}\s+", "", regex=True)
+        write(cdta, "cdta", id_col="GEOID", name_col="NAME", extra=["SHORT"])
 
     print("small areas")
     manhattan = co_full[co_full.COUNTYFP == DEMO_COUNTY]

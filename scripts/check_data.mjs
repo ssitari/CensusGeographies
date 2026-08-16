@@ -38,9 +38,21 @@ for (const [key, spec] of Object.entries(DATA)) {
 }
 
 console.log("\ngeoid patterns");
-for (const step of STEPS) {
+
+// A step is one map unless it declares panes, and each pane can carry its own
+// layer and its own GEOID decomposition. Both need checking, or a pane-level
+// mismatch goes unnoticed until a reader hovers the wrong half of the screen.
+const targets = STEPS.flatMap((s) =>
+  (s.panes?.length ? s.panes : [{}]).map((p) => ({
+    id: p.title ? `${s.id}/${p.title}` : s.id,
+    layer: p.layer || s.layer,
+    geoid: p.geoid || s.callout.geoid,
+  }))
+);
+
+for (const step of targets) {
   const spec = DATA[step.layer];
-  const g = step.callout.geoid;
+  const g = step.geoid;
   if (!spec || !g?.parts?.length) continue;
 
   const p = join(root, "data", spec.file);
@@ -55,7 +67,7 @@ for (const step of STEPS) {
   const actual = String(sample).length;
   if (declared !== actual)
     fail(`${step.id}: pattern declares ${declared} digits, data has ${actual} (e.g. "${sample}")`);
-  else console.log(`  ok    ${step.id.padEnd(13)} ${actual} digits`);
+  else console.log(`  ok    ${step.id.padEnd(20)} ${actual} digits`);
 }
 
 const todos = STEPS.flatMap((s) =>

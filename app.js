@@ -6,17 +6,53 @@
 import { STEPS, NEST_KEYS, VINTAGE_NOTE, TODO } from "./steps.js";
 import { DATA } from "./data.js";
 
-const svg = d3.select("#map");
-const gContext = svg.append("g").attr("class", "layer-context");
-const gMain = svg.append("g").attr("class", "layer-main");
-const gRoads = svg.append("g").attr("class", "layer-roads");
-// Reference boundaries drawn *above* the units. Context sits underneath and
-// gets covered by filled shapes, which is wrong when the reference is what
-// orients the reader — state lines under the divisions being the case in
-// point, since students recognise state shapes and read the divisions through
-// them.
-const gOverlay = svg.append("g").attr("class", "layer-overlay");
-const gLabels = svg.append("g").attr("class", "layer-labels");
+const panesEl = document.getElementById("panes");
+
+// A step is normally one map. `panes` makes it several, and they share one
+// projection: the same ground at the same scale in each, which is the only way
+// a side-by-side says anything. A pane inherits everything it does not
+// override from the step, so a single-pane step needs no pane config at all.
+//
+// Group order per pane is load-bearing: context underneath, then the units,
+// then roads, then overlay boundaries drawn *above* the units — context alone
+// is not enough for a reference layer, because filled units cover it — then
+// labels on top of everything.
+let panes = [];
+let paneSig = "";
+
+function paneConfigs(step) {
+  return (step.panes?.length ? step.panes : [{}]).map((p) => ({ ...step, ...p }));
+}
+
+function buildPanes(cfgs) {
+  const sig = `${cfgs.length}:${cfgs.map((c) => c.title || "").join("|")}`;
+  if (sig === paneSig) return;
+  paneSig = sig;
+
+  panesEl.innerHTML = "";
+  panes = cfgs.map((cfg) => {
+    const node = document.createElement("div");
+    node.className = "pane";
+    if (cfg.title) {
+      const h = document.createElement("div");
+      h.className = "pane-title";
+      h.textContent = cfg.title;
+      node.appendChild(h);
+    }
+    panesEl.appendChild(node);
+
+    const svg = d3.select(node).append("svg");
+    return {
+      node,
+      svg,
+      gContext: svg.append("g").attr("class", "layer-context"),
+      gMain: svg.append("g").attr("class", "layer-main"),
+      gRoads: svg.append("g").attr("class", "layer-roads"),
+      gOverlay: svg.append("g").attr("class", "layer-overlay"),
+      gLabels: svg.append("g").attr("class", "layer-labels"),
+    };
+  });
+}
 
 const cache = new Map(); // layer key -> {spec, features}
 const files = new Map(); // file name -> parsed topojson, so the four national
@@ -87,32 +123,28 @@ function fitTo(features, pad = 1) {
 
 async function draw(step, animate = true) {
   const wanted = step.projection === "albers-usa" ? "albers-usa" : "local";
-  const familyChanged = wanted !== family;
-  if (familyChanged) {
+  if (wanted !== family) {
     family = wanted;
     projection = makeProjection(family);
   }
 
-  const main = await layer(step.layer);
+  const cfgs = paneConfigs(step);
+  buildPanes(cfgs);
+  measure();
 
-  // The basemap layer is drawn separately in gRoads with line styling. If it
-  // also appeared in `context` it would be drawn a second time as a filled
-  // polygon, which for street centrelines looks like garbage.
-  const contextKeys = (step.context || []).filter((k) => k !== step.basemap);
-  const contexts = await Promise.all(contextKeys.map(layer));
-
-  if (!main) {
+  const mains = await Promise.all(cfgs.map((c) => layer(c.layer)));
+  if (!mains[0]) {
     renderMissing(step);
     return;
   }
 
-  // A step may frame something other than its own units — the PUMA step fits
-  // to Manhattan so the island reads at a useful size while the surrounding
-  // boroughs stay visible at the edges.
+  // The camera is shared across panes. A step may frame something other than
+  // its own units — the PUMA step fits Manhattan so the island reads at a
+  // useful size while the surrounding boroughs stay visible — and `fitIds`
+  // narrows that to particular features, so a step can frame one PUMA rather
+  // than all 55.
   const fitLayer = step.fit ? await layer(step.fit) : null;
-  let fitFeatures = (fitLayer || main).features;
-  // `fitIds` narrows the camera to specific features of the fit layer, so a
-  // step can frame one PUMA rather than all 55 of them.
+  let fitFeatures = (fitLayer || mains[0]).features;
   if (fitLayer && step.fitIds?.length) {
     const want = new Set(step.fitIds);
     const subset = fitFeatures.filter((f) => want.has(f.properties[fitLayer.spec.id]));
@@ -120,18 +152,40 @@ async function draw(step, animate = true) {
   }
   fitTo(fitFeatures, step.fitPad || 1);
 
-  // Context layers sit underneath, dimmed, purely for orientation.
-  const ctxFeatures = contexts.filter(Boolean).flatMap((l) => l.features);
-  const ctx = gContext.selectAll("path").data(ctxFeatures);
+  for (let i = 0; i < panes.length; i++) {
+    await drawPane(panes[i], cfgs[i], mains[i], animate);
+  }
+
+  document.getElementById("missing").hidden = true;
+  if (panes[0] && mains[0]) {
+    reportUnprojected(panes[0].gMain.selectAll("path.unit"), mains[0]);
+  }
+}
+
+async function drawPane(pane, cfg, main, animate) {
+  if (!main) {
+    pane.gMain.selectAll("path").remove();
+    pane.gContext.selectAll("path").remove();
+    pane.gLabels.selectAll("*").remove();
+    return;
+  }
+
+  // The basemap layer is drawn separately with line styling. If it also
+  // appeared in `context` it would be drawn a second time as a filled polygon,
+  // which for street centrelines looks like garbage.
+  const contextKeys = (cfg.context || []).filter((k) => k !== cfg.basemap);
+  const contexts = (await Promise.all(contextKeys.map(layer))).filter(Boolean);
+
+  const ctxFeatures = contexts.flatMap((l) => l.features);
+  const ctx = pane.gContext.selectAll("path").data(ctxFeatures);
   ctx.exit().remove();
   ctx.enter().append("path").merge(ctx).attr("d", path).attr("class", "context");
 
-  // Roads only appear where a step asks for them.
-  gRoads.selectAll("path").remove();
-  if (step.basemap === "roads") {
+  pane.gRoads.selectAll("path").remove();
+  if (cfg.basemap === "roads") {
     const roads = await layer("roads");
     if (roads) {
-      gRoads
+      pane.gRoads
         .selectAll("path")
         .data(roads.features)
         .enter()
@@ -141,7 +195,7 @@ async function draw(step, animate = true) {
     }
   }
 
-  const sel = gMain.selectAll("path").data(main.features, (d, i) =>
+  const sel = pane.gMain.selectAll("path.unit").data(main.features, (d, i) =>
     main.spec.id ? d.properties[main.spec.id] : i
   );
   sel.exit().transition().duration(animate ? 250 : 0).style("opacity", 0).remove();
@@ -152,22 +206,23 @@ async function draw(step, animate = true) {
   // callout is about NYC the *place*, which does not nest in a county, but the
   // shapes drawn are the five boroughs, which are counties and do nest.
   // Drawing those as dashed "crosses boundaries" outlines would be a lie about
-  // what the reader is looking at, so a step can set unitStyle explicitly.
-  const style = step.unitStyle || (step.callout.nests.county === false ? "outline" : "fill");
+  // what the reader is looking at, so a pane can set unitStyle explicitly.
+  const style = cfg.unitStyle || (cfg.callout.nests.county === false ? "outline" : "fill");
 
-  // A step can call out particular features by id. Highlighted units are
-  // filled darker, and where the step also labels, only the highlighted ones
+  // A pane can call out particular features by id. Highlighted units are
+  // filled darker, and where the pane also labels, only the highlighted ones
   // are named — calling something out and then naming it is one intent.
-  const spotlight = new Set(step.highlight || []);
+  const spotlight = new Set(cfg.highlight || []);
+  const geoid = cfg.geoid || cfg.callout.geoid;
 
   const entered = sel
     .enter()
     .append("path")
     .attr("class", "unit")
-    .classed("local-unit", !!step.local)
+    .classed("local-unit", !!cfg.local)
     .classed("no-nest", style === "outline")
     .style("opacity", 0)
-    .on("mouseenter", (event, d) => showReadout(main.spec, d))
+    .on("mouseenter", (event, d) => showReadout(main.spec, d, geoid))
     .on("mouseleave", clearReadout);
 
   const all = entered.merge(sel).attr("d", path);
@@ -176,16 +231,16 @@ async function draw(step, animate = true) {
   );
   all.transition().duration(animate ? 500 : 0).style("opacity", 1);
 
-  gOverlay.selectAll("path").remove();
+  pane.gOverlay.selectAll("path").remove();
   // When a reference layer is drawn on top, the units underneath need a
   // stronger edge or the two read as one undifferentiated mesh — the division
   // boundaries have to be obviously the bolder of the two.
-  gMain.classed("has-overlay", !!(step.overlay || []).length);
+  pane.gMain.classed("has-overlay", !!(cfg.overlay || []).length);
 
-  for (const key of step.overlay || []) {
+  for (const key of cfg.overlay || []) {
     const ov = await layer(key);
     if (!ov) continue;
-    gOverlay
+    pane.gOverlay
       .selectAll(`path.ov-${key}`)
       .data(ov.features)
       .enter()
@@ -194,9 +249,7 @@ async function draw(step, animate = true) {
       .attr("d", path);
   }
 
-  document.getElementById("missing").hidden = true;
-  reportUnprojected(all, main);
-  await renderLabels(step);
+  await renderLabels(cfg, pane);
 }
 
 // ── map labels ───────────────────────────────────────────────────────────────
@@ -331,7 +384,8 @@ function overlaps(a, b, pad = 2) {
   );
 }
 
-async function renderLabels(step) {
+async function renderLabels(step, pane) {
+  const gLabels = pane.gLabels;
   gLabels.selectAll("*").remove();
   const keys = step.labels || [];
   if (!keys.length) return;
@@ -453,9 +507,12 @@ function reportUnprojected(selection, main) {
 }
 
 function renderMissing(step) {
-  gMain.selectAll("path").remove();
-  gContext.selectAll("path").remove();
-  gRoads.selectAll("path").remove();
+  for (const pane of panes) {
+    pane.gMain.selectAll("path").remove();
+    pane.gContext.selectAll("path").remove();
+    pane.gRoads.selectAll("path").remove();
+    pane.gLabels.selectAll("*").remove();
+  }
   const el = document.getElementById("missing");
   el.hidden = false;
   el.textContent = `No geometry yet for “${step.layer}”. Run scripts/build_data.py, then reload.`;
@@ -466,9 +523,8 @@ function renderMissing(step) {
 // the single highest-value thing on the page: it turns an opaque 11-digit
 // string into a thing with visible parts.
 
-function showReadout(spec, feature) {
+function showReadout(spec, feature, geoid) {
   const box = document.getElementById("readout");
-  const step = STEPS[current];
   const raw = spec.id ? feature.properties[spec.id] : null;
   const name = feature.properties[spec.name];
 
@@ -485,7 +541,7 @@ function showReadout(spec, feature) {
   }
 
   let at = 0;
-  const chunks = (step.callout.geoid.parts || [])
+  const chunks = (geoid?.parts || [])
     .map(([label, n]) => {
       const piece = String(raw).slice(at, at + n);
       at += n;
@@ -594,11 +650,15 @@ function fromHash() {
 
 // ── resize ───────────────────────────────────────────────────────────────────
 
+// Panes are equal width, so measuring one gives the drawing area every pane
+// shares — and because they also share the projection, the same ground lands
+// on the same pixel in each.
 function measure() {
-  const box = document.getElementById("map-wrap").getBoundingClientRect();
+  if (!panes.length) return;
+  const box = panes[0].node.getBoundingClientRect();
   width = box.width;
   height = box.height;
-  svg.attr("viewBox", `0 0 ${width} ${height}`);
+  for (const pane of panes) pane.svg.attr("viewBox", `0 0 ${width} ${height}`);
 }
 
 function resize() {
@@ -621,7 +681,6 @@ window.addEventListener("resize", debounce(resize, 150));
 
 document.getElementById("vintage").textContent = VINTAGE_NOTE;
 
-measure();
 go(fromHash(), false);
 
 // ── utilities ────────────────────────────────────────────────────────────────

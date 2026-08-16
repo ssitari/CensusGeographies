@@ -46,7 +46,7 @@ export const DATA = {
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },
   manhattan:     { file: "manhattan.json",    object: "manhattan",id: ID,   name: NAME },
   puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME, labelProp: "SHORT" },
-  cdta:          { file: "cdta.json",         object: "cdta",     id: ID,   name: NAME },
+  cdta:          { file: "cdta.json",         object: "cdta",     id: ID,   name: NAME, labelProp: "SHORT" },
   nta:           { file: "nta.json",          object: "nta",      id: ID,   name: NAME },
 
   tract:         { file: "tract.json",        object: "tract",    id: ID,   name: NAME },

@@ -271,12 +271,32 @@ export const STEPS = [
     fit: "puma",
     fitIds: ["3604109"],
     fitPad: 0.55,
-    // MN0901 Morningside Heights, spotlit the same way the Columbia PUMA was
-    // on the previous step. It sits inside CDTA MN09 with Manhattanville and
-    // Hamilton Heights — the same ground the one PUMA covered, split three
-    // ways, which is the nesting this step is for.
-    highlight: ["MN0901"],
-    labels: ["nta"],
+    // Two maps of the same ground, side by side, sharing one projection so the
+    // shapes are directly comparable. Reading across, the three NTAs on the
+    // left are the one CDTA on the right — the nesting is the picture rather
+    // than a claim in the text.
+    //
+    // CDTA codes are four characters against the NTA's six, so the right pane
+    // carries its own GEOID decomposition for the readout.
+    panes: [
+      {
+        title: "NTAs",
+        layer: "nta",
+        highlight: ["MN0901"],
+        labels: ["nta"],
+      },
+      {
+        title: "CDTAs",
+        layer: "cdta",
+        highlight: ["MN09"],
+        labels: ["cdta"],
+        geoid: {
+          pattern: "BBNN",
+          example: "MN09",
+          parts: [["borough", 2], ["district", 2]],
+        },
+      },
+    ],
     callout: {
       status: "Locally defined",
       nests: { nation: true, state: true, county: false, tract: true },
