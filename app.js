@@ -110,7 +110,15 @@ async function draw(step, animate = true) {
   // to Manhattan so the island reads at a useful size while the surrounding
   // boroughs stay visible at the edges.
   const fitLayer = step.fit ? await layer(step.fit) : null;
-  fitTo((fitLayer || main).features, step.fitPad || 1);
+  let fitFeatures = (fitLayer || main).features;
+  // `fitIds` narrows the camera to specific features of the fit layer, so a
+  // step can frame one PUMA rather than all 55 of them.
+  if (fitLayer && step.fitIds?.length) {
+    const want = new Set(step.fitIds);
+    const subset = fitFeatures.filter((f) => want.has(f.properties[fitLayer.spec.id]));
+    if (subset.length) fitFeatures = subset;
+  }
+  fitTo(fitFeatures, step.fitPad || 1);
 
   // Context layers sit underneath, dimmed, purely for orientation.
   const ctxFeatures = contexts.filter(Boolean).flatMap((l) => l.features);

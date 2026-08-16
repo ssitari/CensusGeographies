@@ -259,12 +259,24 @@ export const STEPS = [
   {
     id: "cdta-nta",
     label: "CDTAs & NTAs",
-    scope: "New York City",
+    scope: "Morningside Heights and around",
     layer: "nta",
     context: ["cdta", "borough"],
     projection: "local",
     emphasis: true,
     local: true, // locally defined, not a Census product — app flags this
+    // Framed on the same ground as the previous step: PUMA 3604109, shown at
+    // 55% of the viewport so the neighbouring NTAs stay in view. Arriving here
+    // from the PUMA step, the reader sees the same place subdivided.
+    fit: "puma",
+    fitIds: ["3604109"],
+    fitPad: 0.55,
+    // MN0901 Morningside Heights, spotlit the same way the Columbia PUMA was
+    // on the previous step. It sits inside CDTA MN09 with Manhattanville and
+    // Hamilton Heights — the same ground the one PUMA covered, split three
+    // ways, which is the nesting this step is for.
+    highlight: ["MN0901"],
+    labels: ["nta"],
     callout: {
       status: "Locally defined",
       nests: { nation: true, state: true, county: false, tract: true },
@@ -276,7 +288,7 @@ export const STEPS = [
       // between a local and a Census geography.
       geoid: {
         pattern: "BBNNNN",
-        example: "MN0191",
+        example: "MN0901",
         parts: [["borough", 2], ["nta", 4]],
       },
       gotcha: TODO,
