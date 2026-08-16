@@ -352,11 +352,21 @@ export const STEPS = [
   {
     id: "tract",
     label: "Census Tracts",
-    scope: "Manhattan",
+    scope: "Morningside Heights and around",
     layer: "tract",
     context: ["borough"],
     projection: "local",
     emphasis: true,
+    // Same frame as the three steps before it. PUMA, NTA, ZCTA and tract all
+    // land on one neighbourhood, so stepping through them shows four different
+    // ways of cutting the same ground rather than four separate places.
+    fit: "puma",
+    fitIds: ["3604109"],
+    fitPad: 0.55,
+    // Tract 205 sits in NTA Morningside Heights, CDTA MN09, PUMA 3604109 —
+    // the same chain the previous steps spotlit, now at its federal level.
+    highlight: ["36061020500"],
+    labels: ["tract"],
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: null },
@@ -364,7 +374,7 @@ export const STEPS = [
       acs: TODO,
       geoid: {
         pattern: "SSCCCTTTTTT",
-        example: "36061014500",
+        example: "36061020500",
         parts: [["state", 2], ["county", 3], ["tract", 6]],
       },
       gotcha: TODO,
