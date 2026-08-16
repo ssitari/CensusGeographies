@@ -44,7 +44,8 @@ export const DATA = {
 
   "county-outer":{ file: "county-outer.json", object: "county",   id: ID,   name: NAME },
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },
-  puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME },
+  manhattan:     { file: "manhattan.json",    object: "manhattan",id: ID,   name: NAME },
+  puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME, labelProp: "SHORT" },
   cdta:          { file: "cdta.json",         object: "cdta",     id: ID,   name: NAME },
   nta:           { file: "nta.json",          object: "nta",      id: ID,   name: NAME },
 

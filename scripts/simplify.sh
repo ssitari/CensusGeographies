@@ -80,6 +80,7 @@ echo "new york city"
 # relative to each source's own detail, not a shared scale.
 simplify county-outer 2%   county
 simplify borough      1.5% borough
+simplify manhattan    1.5% manhattan
 # The NYC layers below are all dissolved from the DCP tract file, which carries
 # survey-grade detail like the borough boundary — hence percentages an order of
 # magnitude below the Census layers.

@@ -327,6 +327,12 @@ def main():
     write(boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full),
           "borough", id_col="GEOID", name_col="NAME")
 
+    # Manhattan alone, used as a camera target rather than something drawn:
+    # the PUMA step frames the island and lets the neighbouring boroughs fall
+    # where they may around it.
+    bb = boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full)
+    write(bb[bb.GEOID == NY + DEMO_COUNTY], "manhattan", id_col="GEOID", name_col="NAME")
+
     # Backdrop for the city step: the metro counties *outside* New York City.
     # The five boroughs are drawn from DCP's water-excluded file, so putting
     # water-inclusive Census counties underneath them left a coarse grey collar
@@ -357,7 +363,10 @@ def main():
                          geoid=lambda d: "36" + d["PUMA"].astype(str).str.zfill(5))
         puma = puma.merge(names, left_on="GEOID", right_on="GEOID20", how="left")
         puma["NAME"] = puma["NAMELSAD20"].fillna("PUMA " + puma["GEOID"])
-        write(puma, "puma", id_col="GEOID", name_col="NAME")
+        # Short form for the map, matching how a PUMA is normally cited: the
+        # five-digit code without the state prefix.
+        puma["SHORT"] = "PUMA " + puma["GEOID"].str[2:]
+        write(puma, "puma", id_col="GEOID", name_col="NAME", extra=["SHORT"])
 
         write(aggregate(nyct, "NTA2020", "NTAName"), "nta",
               id_col="GEOID", name_col="NAME")

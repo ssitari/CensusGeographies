@@ -231,11 +231,21 @@ export const STEPS = [
   {
     id: "puma",
     label: "PUMAs",
-    scope: "New York City",
+    scope: "Manhattan and its neighbours",
     layer: "puma",
     context: ["borough"],
     projection: "local",
     emphasis: true,
+    // Framed on Manhattan at 80% of the viewport, so the island reads at a
+    // useful size and the neighbouring boroughs stay visible around it.
+    fit: "manhattan",
+    fitPad: 0.8,
+    // 2020 PUMA 3604109 is Manhattan Community District 9, Morningside Heights
+    // and Hamilton Heights — Columbia's Morningside campus. Under the 2010
+    // PUMAs this was 03802; the codes were renumbered for the 2020 vintage,
+    // which is worth a sentence in the gotcha.
+    highlight: ["3604109"],
+    labels: ["puma"],
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: false, tract: true },

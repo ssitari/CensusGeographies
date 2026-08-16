@@ -139,6 +139,11 @@ kind of claims a callout will want to make, so they are measured and dated.
   South Atlantic 9, Mountain 8, West North Central 7, New England 6, East North
   Central 5, Pacific 5, East South Central 4, West South Central 4, Middle
   Atlantic 3.
+- **PUMA 03802 is now 3604109.** The Columbia area — Manhattan Community
+  District 9, Morningside Heights and Hamilton Heights — was PUMA 03802 under
+  the 2010 vintage. The 2020 delineation renumbered it. The old code does not
+  appear anywhere in the current layer, so anyone searching for 03802 in recent
+  ACS microdata will find nothing. Worth being the gotcha on that step.
 - **NTAs do *not* nest within PUMAs**: 4 of 262 span a PUMA boundary
   (`BK1502`, `BK1704`, `BX0702`, `BX0802`). Worth knowing before writing any
   callout that implies the local and federal statistical geographies line up.

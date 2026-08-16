@@ -74,15 +74,14 @@ async function layer(key) {
 
 // ── rendering ────────────────────────────────────────────────────────────────
 
-function fitTo(features) {
+// `pad` is the fraction of the viewport the fit target should occupy. Below 1
+// it leaves room around the target, which is how a step frames one geography
+// and still shows what surrounds it.
+function fitTo(features, pad = 1) {
   const fc = { type: "FeatureCollection", features };
-  projection.fitExtent(
-    [
-      [24, 24],
-      [width - 24, height - 24],
-    ],
-    fc
-  );
+  const mx = 24 + (width * (1 - pad)) / 2;
+  const my = 24 + (height * (1 - pad)) / 2;
+  projection.fitExtent([[mx, my], [width - mx, height - my]], fc);
   path = d3.geoPath(projection);
 }
 
@@ -107,7 +106,11 @@ async function draw(step, animate = true) {
     return;
   }
 
-  fitTo(main.features);
+  // A step may frame something other than its own units — the PUMA step fits
+  // to Manhattan so the island reads at a useful size while the surrounding
+  // boroughs stay visible at the edges.
+  const fitLayer = step.fit ? await layer(step.fit) : null;
+  fitTo((fitLayer || main).features, step.fitPad || 1);
 
   // Context layers sit underneath, dimmed, purely for orientation.
   const ctxFeatures = contexts.filter(Boolean).flatMap((l) => l.features);
@@ -144,6 +147,11 @@ async function draw(step, animate = true) {
   // what the reader is looking at, so a step can set unitStyle explicitly.
   const style = step.unitStyle || (step.callout.nests.county === false ? "outline" : "fill");
 
+  // A step can call out particular features by id. Highlighted units are
+  // filled darker, and where the step also labels, only the highlighted ones
+  // are named — calling something out and then naming it is one intent.
+  const spotlight = new Set(step.highlight || []);
+
   const entered = sel
     .enter()
     .append("path")
@@ -155,6 +163,9 @@ async function draw(step, animate = true) {
     .on("mouseleave", clearReadout);
 
   const all = entered.merge(sel).attr("d", path);
+  all.classed("spotlight", (d) =>
+    spotlight.size ? spotlight.has(d.properties[main.spec.id]) : false
+  );
   all.transition().duration(animate ? 500 : 0).style("opacity", 1);
 
   gOverlay.selectAll("path").remove();
@@ -335,7 +346,10 @@ async function renderLabels(step) {
     // a crowded frame labels the major municipalities rather than whichever
     // hamlet happened to come first in the file. With `labelMax` this is what
     // makes "label the larger ones" work without needing a population cut-off.
+    const only = new Set(key === step.layer ? step.highlight || [] : []);
+
     const eligible = l.features.filter((f) => {
+      if (only.size && !only.has(f.properties[l.spec.id])) return false;
       if (l.spec.labelWhen && !l.spec.labelWhen(f.properties)) return false;
       if (step.labelMinPop) {
         const pop = +f.properties[l.spec.popProp];
