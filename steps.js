@@ -197,9 +197,16 @@ export const STEPS = [
     label: "New York City",
     scope: "One place, five counties",
     layer: "borough",
-    // Neighbouring counties, not all 1,293 NY places: at this zoom the places
-    // layer is visual noise, while Westchester and Nassau orient the reader.
-    context: ["county-ny"],
+    // Metro counties outside the city only. The boroughs come from DCP's
+    // water-excluded file, so Census counties underneath them put a coarse
+    // grey collar of open water around each borough that lined up with
+    // nothing. Stopping at the city line keeps Westchester and Nassau for
+    // orientation without the mismatch.
+    context: ["county-outer"],
+    // Labels strip the "(Kings County)" half, so these read as Brooklyn,
+    // Queens, Manhattan — the names people actually use, against a readout
+    // that still shows the county underneath.
+    labels: ["borough"],
     projection: "local",
     transition: true,
     inversion: true, // app draws this one differently — see note in README

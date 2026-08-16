@@ -327,6 +327,15 @@ def main():
     write(boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full),
           "borough", id_col="GEOID", name_col="NAME")
 
+    # Backdrop for the city step: the metro counties *outside* New York City.
+    # The five boroughs are drawn from DCP's water-excluded file, so putting
+    # water-inclusive Census counties underneath them left a coarse grey collar
+    # of open water around every borough that did not line up with anything.
+    # Stopping the backdrop at the city line removes the mismatch and still
+    # gives Westchester and Nassau for orientation.
+    outer = within(counties(state=NY, year=YEAR, cb=True, resolution="500k"), here)
+    write(outer[~outer.GEOID.str[2:].isin(NYC_COUNTIES)], "county-outer")
+
     nyct = nyc_tracts()
 
     if nyct is None:

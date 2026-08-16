@@ -42,6 +42,7 @@ export const DATA = {
   "place-metro": { file: "place-metro.json",  object: "place",    id: ID,   name: NAME,
                    labelWhen: (p) => p.LSAD !== "57", popProp: "POP" },
 
+  "county-outer":{ file: "county-outer.json", object: "county",   id: ID,   name: NAME },
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },
   puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME },
   cdta:          { file: "cdta.json",         object: "cdta",     id: ID,   name: NAME },
