@@ -32,12 +32,18 @@ footer so nobody mistakes it for one.
 
 **Nesting is shown, not implied.** The census hierarchy is not a clean tree, and
 most introductions hide that. Every step carries a `nests in` badge reading
-`state ✓ · county ✗`, and geographies that cross boundaries are drawn as dashed
-outlines instead of filled shapes. Places appear *before* counties in the tour
-for exactly this reason.
+`state ✓ · county ✗`, stated in words rather than encoded in a colour key the
+reader would have to learn.
 
-The six steps that matter most to a beginner — PUMAs, CDTAs/NTAs, tracts, ZCTAs,
-block groups, blocks — are marked as key levels and get a fuller treatment.
+**One set of marks, every frame.** The step's own geography is a red outline;
+the called-out example is a translucent blue wash; whatever lies underneath is
+grey with white edges; the canvas is lighter than that grey. Six consecutive
+steps then frame the same few blocks of Morningside Heights, so what changes
+between them is the boundaries, not the styling.
+
+The six steps that matter most to a beginner — PUMAs, NTAs and CDTAs, ZCTAs,
+tracts, block groups, blocks — are marked as key levels and get a fuller
+treatment.
 
 Hovering any unit decomposes its GEOID into labelled runs
 (`36061014500` → `36` state · `061` county · `014500` tract), which is the

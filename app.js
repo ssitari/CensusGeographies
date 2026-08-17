@@ -152,14 +152,13 @@ async function draw(step, animate = true) {
   }
   fitTo(fitFeatures, step.fitPad || 1);
 
+  const drawn = [];
   for (let i = 0; i < panes.length; i++) {
-    await drawPane(panes[i], cfgs[i], mains[i], animate);
+    drawn[i] = await drawPane(panes[i], cfgs[i], mains[i], animate);
   }
 
   document.getElementById("missing").hidden = true;
-  if (panes[0] && mains[0]) {
-    reportUnprojected(panes[0].gMain.selectAll("path.unit"), mains[0]);
-  }
+  reportUnprojected(drawn[0] || [], mains[0]);
 }
 
 async function drawPane(pane, cfg, main, animate) {
@@ -250,6 +249,15 @@ async function drawPane(pane, cfg, main, animate) {
   }
 
   await renderLabels(cfg, pane);
+
+  // Hand back the features that failed to project. Reading this off the DOM
+  // instead would also catch the previous step's units, which are still in the
+  // document mid-exit — that is how the states step's "5 not shown" notice
+  // ended up on the frames after it.
+  return main.features.filter((f, i) => {
+    const node = all.nodes()[i];
+    return node && !node.getAttribute("d");
+  });
 }
 
 // ── map labels ───────────────────────────────────────────────────────────────
@@ -488,12 +496,9 @@ async function renderLabels(step, pane) {
 // frames — 5 of the 56 state-equivalents. Dropping them silently would be a
 // lie of omission on a page whose subject is what counts as a state, so count
 // what failed to project and say so on the map.
-function reportUnprojected(selection, main) {
+function reportUnprojected(features, main) {
   const el = document.getElementById("offmap");
-  const missed = [];
-  selection.each(function (d) {
-    if (!this.getAttribute("d")) missed.push(d.properties[main.spec.name]);
-  });
+  const missed = features.map((f) => f.properties[main.spec.name]);
 
   if (!missed.length) {
     el.hidden = true;

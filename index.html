@@ -11,7 +11,7 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      background: #edecea;
+      background: #f4f3f1;
       color: #222;
       height: 100vh;
       display: flex;
@@ -84,9 +84,16 @@
       align-items: center; justify-content: center;
       font-size: 12px; color: #999; text-align: center; padding: 24px;
     }
+    /* `display: flex` above outranks the UA rule that the hidden attribute
+       relies on, so without this the placeholder stays laid out over the whole
+       map — invisible, but swallowing every pointer event before it reaches a
+       unit. The attribute selector outranks the id rule and puts it away. */
+    #missing[hidden] { display: none; }
 
+    #offmap[hidden] { display: none; }
     #offmap {
       position: absolute; right: 14px; top: 14px;
+      pointer-events: none;
       max-width: 260px; padding: 7px 10px;
       background: #fdf4e6; border: 0.5px solid #e8d3b0; border-radius: 4px;
       font-size: 11px; line-height: 1.45; color: #7a5520;
@@ -150,66 +157,65 @@
     .source { display: inline-block; margin-top: 12px; font-size: 11px; color: #2b4a6f; }
     span.source { color: #c0392b; opacity: .65; font-style: italic; }
 
-    /* ── Map marks ── */
-    .context { fill: #e2e0dd; stroke: #fff; stroke-width: .5px; }
-    .unit { fill: #b9cadd; stroke: #fff; stroke-width: .7px; cursor: pointer; }
-    .unit:hover { fill: #7d9dc0; }
-    /* Solid, not dashed. Adjacent units share a boundary but each polygon is
-       stroked separately, so their dash phases disagree along the shared edge
-       and the line breaks up unevenly — worst where districts are numerous and
-       intricate. The red outline against the filled blue of a nesting geography
-       carries the distinction without the dashes. */
-    .unit.no-nest { fill: none; stroke: #97382f; stroke-width: 1.4px; }
-    .unit.no-nest:hover { fill: rgba(151,56,47,.12); }
-    .unit.local-unit { fill: #e8c99a; stroke: #fff; }
-    /* A called-out unit: same hue, enough darker to find at a glance without
-       introducing another colour with its own meaning. */
-    .unit.spotlight { fill: #5b7fa6; }
-    /* An outline geography spotlit keeps its interior visible: ZCTAs are drawn
-       unfilled so the tracts underneath show through, and filling the
-       highlight would hide the comparison it exists to make. */
-    .unit.no-nest.spotlight {
-      fill: rgba(91,127,166,.28); stroke: #2b4a6f; stroke-width: 2.6px;
+    /* ── Map marks ───────────────────────────────────────────────────────
+       One scheme for every frame, taken from the ZCTA step:
+
+         current geography   red outline, no fill
+         highlighted sample  translucent blue with a darker blue edge
+         underlying geography grey fill, white edges
+         canvas              lighter than the underlying grey
+
+       Whether a geography nests used to be carried by fill colour — blue for
+       nesting, red outline for crossing, amber for locally defined. That now
+       lives only in the callout's "nests in" badge, which states it in words
+       rather than asking anyone to learn a colour key. */
+    .context { fill: #e0ddd8; stroke: #fff; stroke-width: .6px; }
+
+    .unit {
+      fill: none;
+      stroke: #97382f;
+      stroke-width: 1.3px;
+      cursor: pointer;
+      /* An unfilled path is only hit-tested on its stroke, so without this the
+         readout appears only when the pointer is exactly on a boundary line.
+         Every frame is unfilled now, so every frame needs it. */
+      pointer-events: all;
     }
-    .unit.no-nest.spotlight:hover { fill: rgba(91,127,166,.4); }
-    .unit.spotlight:hover { fill: #4a6d94; }
-    .road { fill: none; stroke: #cfcdc9; stroke-width: .6px; }
+    .unit:hover { fill: rgba(151, 56, 47, .10); }
+
+    .unit.spotlight {
+      fill: rgba(91, 127, 166, .32);
+      stroke: #2b4a6f;
+      stroke-width: 2.4px;
+    }
+    .unit.spotlight:hover { fill: rgba(91, 127, 166, .45); }
+
+    .road { fill: none; stroke: #cfcdc9; stroke-width: .6px; pointer-events: none; }
+
     /* Reference boundaries over the units — present enough to read a familiar
        shape through, faint enough not to compete with what the step is about. */
     .overlay-line {
-      fill: none; stroke: #fff; stroke-width: .6px;
-      stroke-opacity: .5; pointer-events: none;
+      fill: none; stroke: #b9b5ae; stroke-width: .7px;
+      stroke-opacity: .95; pointer-events: none;
     }
-    /* Two boundary types, two colours, and the labels take the colour of their
-       own boundary — so the hierarchy is legible without a legend. Neither
-       colour reuses the red of "crosses boundaries" or the amber of "locally
-       defined", which already mean something else in this palette. */
-    .layer-main.has-overlay .unit { stroke: #1d7f96; stroke-width: 1.9px; }
+    /* Regions are the one place two levels of the same family share a frame:
+       divisions are the step's own geography and take the standard red, while
+       the region above them gets the heaviest line on the map. */
     .ov-region { stroke: #12314c; stroke-width: 3px; stroke-opacity: .95; }
 
     .map-label {
       text-anchor: middle; dominant-baseline: middle; pointer-events: none;
       paint-order: stroke; stroke: #fff; stroke-width: 3px;
       stroke-linejoin: round; font-family: inherit;
+      fill: #97382f; font-size: 9.5px; font-weight: 600;
     }
+    /* The region label matches its own heavy boundary rather than the default,
+       since on that frame it names the level above the step's geography. */
     .lab-region {
       fill: #12314c; font-size: 12.5px; font-weight: 700;
       letter-spacing: 1.1px; text-transform: uppercase;
     }
-    .lab-division { fill: #14697d; font-size: 10.5px; font-weight: 600; }
-    /* States are the units on their own step rather than a reference layer, so
-       they take the unit colour. Smaller than the division labels because there
-       are 56 of them competing for the same frame. */
-    .lab-state { fill: #2b4a6f; font-size: 9.5px; font-weight: 600; stroke-width: 2.5px; }
-    /* Same red as the outline of a geography that crosses boundaries, so the
-       label reads as belonging to it. */
-    .lab-block,
-    .lab-block-group,
-    .lab-tract,
-    .lab-zcta,
-    .lab-cdta,
-    .lab-nta,
-    .lab-puma { fill: #24435f; font-size: 10.5px; font-weight: 700; }
+    .lab-borough, .lab-puma, .lab-cdta { font-size: 10.5px; }
     .lab-borough { fill: #2b4a6f; font-size: 11px; font-weight: 600; }
     .lab-cd-ny,
     .lab-place-metro { fill: #97382f; font-size: 9.5px; font-weight: 600; stroke-width: 2.5px; }
