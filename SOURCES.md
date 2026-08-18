@@ -147,6 +147,18 @@ kind of claims a callout will want to make, so they are measured and dated.
 - **NTAs do *not* nest within PUMAs**: 4 of 262 span a PUMA boundary
   (`BK1502`, `BK1704`, `BX0702`, `BX0802`). Worth knowing before writing any
   callout that implies the local and federal statistical geographies line up.
+- **The two county-crossing CDTAs cross for different reasons — checked
+  2026-08-16.** Drafting a relationship diagram surfaced this; it wasn't
+  previously verified at the NTA level, only the CDTA level.
+  - `BX08` crosses because one of its own NTAs, `BX0802`, itself spans the
+    Bronx and Manhattan — the Marble Hill anomaly. Of all 262 NTAs, this is
+    the *only* one that spans two counties.
+  - `QN01` crosses for an unrelated reason: it contains `QN0151` (Rikers
+    Island), an NTA that sits wholly within the Bronx but carries a
+    Queens-family code. No NTA-level crossing there — the mismatch is
+    between the NTA's borough and its code prefix, not its geometry.
+  - So "NTAs nest in County" is true for 261 of 262, not all of them — don't
+    round that up to "always" in a callout.
 - **Spatial filters use water-inclusive TIGER masks**, never the trimmed cb
   ones — filtering PUMAs against a shoreline-clipped borough silently dropped
   3 of 55 whose representative point sits over water.
