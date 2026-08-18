@@ -67,10 +67,10 @@ export function mountDiagram(container, opts) {
     g.appendChild(t);
     if (n.local) g.appendChild(el("circle", { class: "gd-dot", cx: b.x - b.w / 2 + 13, cy: b.y, r: 3.2 }));
 
-    g.addEventListener("mouseenter", () => preview(id));
-    g.addEventListener("focus", () => preview(id));
-    g.addEventListener("mouseleave", () => preview(null));
-    g.addEventListener("blur", () => preview(null));
+    g.addEventListener("mouseenter", () => previewNodes([id]));
+    g.addEventListener("focus", () => previewNodes([id]));
+    g.addEventListener("mouseleave", () => previewNodes(null));
+    g.addEventListener("blur", () => previewNodes(null));
     g.addEventListener("click", () => onNavigate?.(NODE_TO_STEP[id]));
     g.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") { e.preventDefault(); onNavigate?.(NODE_TO_STEP[id]); }
@@ -83,11 +83,13 @@ export function mountDiagram(container, opts) {
   paint(activeIds);
 }
 
-// Hovering a different node previews its connections without losing the
-// "you are here" state — releasing the pointer reverts to it rather than to
-// nothing, since there is no placeholder panel to fall back to.
-function preview(id) {
-  paint(id ? [id] : activeIds);
+// Hovering a different node — or, from app.js, a stepper button up top —
+// previews its connections without losing the "you are here" state:
+// releasing the pointer reverts to it rather than to nothing, since there is
+// no placeholder panel to fall back to. Exported so the stepper can drive
+// the same preview a rail hover does, rather than a second implementation.
+export function previewNodes(ids) {
+  paint(ids && ids.length ? ids : activeIds);
 }
 
 function paint(ids) {

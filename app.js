@@ -5,7 +5,7 @@
 
 import { STEPS, NEST_KEYS, VINTAGE_NOTE, TODO } from "./steps.js";
 import { DATA } from "./data.js";
-import { mountDiagram, setActive } from "./diagram.js";
+import { mountDiagram, setActive, previewNodes } from "./diagram.js";
 import { STEP_TO_NODES } from "./diagram-data.js";
 
 const panesEl = document.getElementById("panes");
@@ -629,9 +629,16 @@ function renderStepper() {
         s.emphasis ? " emph" : ""
       }" title="${s.label}"><span>${s.label}</span></button>`
   ).join("");
-  nav.querySelectorAll("button").forEach((b) =>
-    b.addEventListener("click", () => go(+b.dataset.i))
-  );
+  nav.querySelectorAll("button").forEach((b) => {
+    b.addEventListener("click", () => go(+b.dataset.i));
+    // Hovering a stepper button previews that step's node(s) on the rail —
+    // the same preview a hovered rail box gives, just triggered from the
+    // other side of the pairing. Reverts to the real current step on
+    // mouseleave via previewNodes(null), same as leaving a rail node.
+    const nodeIds = STEP_TO_NODES[STEPS[+b.dataset.i].id] || [];
+    b.addEventListener("mouseenter", () => previewNodes(nodeIds));
+    b.addEventListener("mouseleave", () => previewNodes(null));
+  });
 
   document.getElementById("prev").disabled = current === 0;
   document.getElementById("next").disabled = current === STEPS.length - 1;

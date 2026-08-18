@@ -53,8 +53,14 @@
       cursor: pointer;
       white-space: nowrap;
     }
-    #stepper button:hover { background: #f4f3f1; }
     #stepper button.emph { border-color: #bcc9d6; }
+    /* Same red used for "current" on the geography rail, so hovering a step
+       up here and hovering its box on the rail read as the same gesture.
+       Placed after `.emph` so hover's border wins the tie on key-level
+       buttons instead of `.emph` keeping its blue-grey; placed before `.on`
+       (same 0-1-1-1 specificity throughout) so hovering the already-active
+       step keeps its navy fill rather than flashing red. */
+    #stepper button:hover { background: rgba(151,56,47,.09); border-color: #97382f; color: #97382f; }
     #stepper button.on { background: #2b4a6f; border-color: #2b4a6f; color: #fff; }
 
     .navbtn {
