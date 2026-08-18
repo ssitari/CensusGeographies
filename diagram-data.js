@@ -10,28 +10,28 @@
 
 // The one chain that always nests, Nation through Block.
 export const SPINE = [
-  { id: "nation",     label: "Nation",       y: 30 },
-  { id: "region",      label: "Region",       y: 76 },
-  { id: "division",   label: "Division",     y: 122 },
-  { id: "state",      label: "State",        y: 168 },
-  { id: "county",     label: "County",       y: 232 },
-  { id: "tract",      label: "Tract",        y: 470 },
-  { id: "blockgroup", label: "Block Group",  y: 522 },
-  { id: "block",      label: "Block",        y: 574 },
+  { id: "nation",     label: "Nation",       y: 40 },
+  { id: "region",      label: "Region",       y: 96 },
+  { id: "division",   label: "Division",     y: 152 },
+  { id: "state",      label: "State",        y: 208 },
+  { id: "county",     label: "County",       y: 278 },
+  { id: "tract",      label: "Tract",        y: 620 },
+  { id: "blockgroup", label: "Block Group",  y: 680 },
+  { id: "block",      label: "Block",        y: 736 },
 ];
 
 // Everything that attaches at one or two points on the spine and stops.
 // `up`/`down` are the real edges; `local` marks a not-a-Census-product dot.
 export const ANCILLARY = [
-  { id: "cd", label: "Cong. District", y: 250, up: ["state"], down: ["block"], local: false },
-  { id: "place", label: "Place", y: 292, up: ["state"], down: ["block"], local: false },
+  { id: "cd", label: "Cong. District", y: 300, up: ["state"], down: ["block"], local: false },
+  { id: "place", label: "Place", y: 352, up: ["state"], down: ["block"], local: false },
   // ZCTAs ship as one national file with no state subset (verified building
   // this tour — see SOURCES.md), which is why this nests in Nation rather
   // than State like everything else in the column.
-  { id: "zcta", label: "ZCTA", y: 334, up: ["nation"], down: ["block"], local: false },
-  { id: "puma", label: "PUMA", y: 376, up: ["state"], down: ["tract"], local: false },
-  { id: "cdta", label: "CDTA", y: 418, up: ["county"], down: ["nta"], local: true },
-  { id: "nta", label: "NTA", y: 460, up: ["cdta"], down: ["tract"], local: true },
+  { id: "zcta", label: "ZCTA", y: 404, up: ["nation"], down: ["block"], local: false },
+  { id: "puma", label: "PUMA", y: 456, up: ["state"], down: ["tract"], local: false },
+  { id: "cdta", label: "CDTA", y: 508, up: ["county"], down: ["nta"], local: true },
+  { id: "nta", label: "NTA", y: 560, up: ["cdta"], down: ["tract"], local: true },
 ];
 
 export const NODES = {};
@@ -82,9 +82,9 @@ export const STEP_TO_NODES = {
 };
 
 // ── geometry ─────────────────────────────────────────────────────────────
-export const SPINE_X = 58, SPINE_W = 118, SPINE_H = 28;
-export const ANC_X = 196, ANC_W = 130, ANC_H = 24;
-export const VIEW_W = 268, VIEW_H = 604;
+export const SPINE_X = 95, SPINE_W = 150, SPINE_H = 36;
+export const ANC_X = 300, ANC_W = 170, ANC_H = 30;
+export const VIEW_W = 405, VIEW_H = 774;
 
 export function box(node) {
   return node.family === "spine"
