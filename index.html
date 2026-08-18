@@ -76,8 +76,12 @@
       width: 268px; flex-shrink: 0; background: #fff;
       border-right: 0.5px solid #ddd; overflow-y: auto; overflow-x: hidden;
       padding: 14px 10px;
+      /* Centered when the window is tall enough to show the whole rail with
+         room to spare; once it doesn't fit, this same rule lets it scroll
+         from the top rather than clipping the middle. */
+      display: flex; flex-direction: column; justify-content: center;
     }
-    #geo-nav svg { display: block; width: 100%; height: auto; }
+    #geo-nav svg { display: block; width: 100%; height: auto; flex-shrink: 0; }
 
     .gd-node { cursor: pointer; }
     .gd-node rect {
