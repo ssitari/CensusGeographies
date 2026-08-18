@@ -5,6 +5,8 @@
 
 import { STEPS, NEST_KEYS, VINTAGE_NOTE, TODO } from "./steps.js";
 import { DATA } from "./data.js";
+import { mountDiagram, setActive } from "./diagram.js";
+import { STEP_TO_NODES } from "./diagram-data.js";
 
 const panesEl = document.getElementById("panes");
 
@@ -645,6 +647,7 @@ function go(i, push = true) {
   renderCallout(step);
   clearReadout();
   draw(step);
+  setActive(STEP_TO_NODES[step.id] || []);
 }
 
 function fromHash() {
@@ -672,6 +675,10 @@ function resize() {
 }
 
 // ── boot ─────────────────────────────────────────────────────────────────────
+
+mountDiagram(document.getElementById("geo-nav"), {
+  onNavigate: (stepId) => go(STEPS.findIndex((s) => s.id === stepId)),
+});
 
 document.getElementById("prev").addEventListener("click", () => go(current - 1));
 document.getElementById("next").addEventListener("click", () => go(current + 1));
