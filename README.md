@@ -49,6 +49,14 @@ Hovering any unit decomposes its GEOID into labelled runs
 (`36061014500` → `36` state · `061` county · `014500` tract), which is the
 fastest way to make an opaque identifier legible.
 
+Where the pipeline found it, the same hover also shows 2020 Census population
+plus ACS 1-year and 5-year estimates — with margins of error — and median
+household income. Gaps show rather than hide: tracts and block groups always
+read "not published at this level" for the 1-year figures, which is the
+Census's own rule (below the sampling threshold, always), not a hole in the
+data. That gap is most of the point — a beginner sees directly which
+geographies are too small for annual estimates, rather than being told.
+
 ---
 
 ## Project structure
@@ -63,6 +71,7 @@ fastest way to make an opaque identifier legible.
 | `scripts/build_data.py` | Fetches boundaries via `pygris` → `data/_raw/*.geojson` |
 | `scripts/simplify.sh` | Simplifies and converts to `data/*.json` (TopoJSON) |
 | `scripts/check_data.mjs` | Validates the built data against `data.js` and `steps.js` |
+| `scripts/attach_population.py` | Attaches 2020 Census / ACS stats to the built data |
 | `SOURCES.md` | Citation log — every published fact gets a row |
 
 Same split as the choropleth tools in this account: `app.js` is the engine,
@@ -112,7 +121,19 @@ python -m venv .venv
 npm install mapshaper
 bash scripts/simplify.sh                          # → data/*.json
 node scripts/check_data.mjs                       # validate
+
+export CENSUS_API_KEY=...                          # free: census.gov/data/key_signup.html
+.venv/Scripts/python.exe scripts/attach_population.py  # writes stats onto data/*.json
 ```
+
+The last step attaches 2020 Census totals plus ACS 1-year and 5-year
+population (with margins of error) and median household income to every
+hoverable layer it can — see that script's docstring for exactly which
+levels get which product, and why congressional districts are pinned to
+2021 rather than the current year. Requires a
+[free Census API key](https://api.census.gov/data/key_signup.html); never
+commit it — the script reads it from the `CENSUS_API_KEY` environment
+variable only.
 
 Census layers come through `pygris` so the TIGER/Line URLs are constructed
 rather than hand-written. The two NYC DCP layers (NTAs, CDTAs) are not Census

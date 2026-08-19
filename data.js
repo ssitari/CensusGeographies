@@ -11,6 +11,17 @@
 //  NAME, so there are no per-layer property names to track here. `id: null`
 //  means the layer has no meaningful identifier to decompose — roads are drawn
 //  for orientation only.
+//
+//  scripts/attach_population.py runs after simplify.sh and writes nine more
+//  properties directly onto most layers' features: POP20 (2020 Census),
+//  ACS1_POP/_M and ACS5_POP/_M (population estimate + margin of error), the
+//  same pair for ACS1_INC/ACS5_INC (median household income), and ACS_YEAR.
+//  None of that is declared here — app.js's showReadout() checks for POP20
+//  directly, so a layer the script hasn't touched (context-only layers,
+//  NTAs/CDTAs for now) just doesn't show a stats block, no per-layer flag
+//  needed. See that script's docstring for which levels lack which product
+//  and why, especially congressional districts, which are pinned to 2021
+//  rather than the current year.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ID = "GEOID";

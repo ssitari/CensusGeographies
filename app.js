@@ -530,20 +530,47 @@ function renderMissing(step) {
 // the single highest-value thing on the page: it turns an opaque 11-digit
 // string into a thing with visible parts.
 
+// scripts/attach_population.py writes POP20 / ACS1_* / ACS5_* directly onto
+// feature properties for every hoverable layer it covers. A layer it hasn't
+// touched (context-only layers, NTAs/CDTAs — not run yet) simply lacks these
+// keys, and statBlock renders nothing for it — the absence of the whole
+// block is silent, but a field that exists at the *layer* level and is null
+// on *this* feature (a tract's ACS1_POP, always) renders as "not published,"
+// on purpose. That gap is data, not a bug: which levels go quiet is most of
+// what this feature teaches.
+const MONEY = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+const NUM = new Intl.NumberFormat("en-US");
+
+function statRow(label, estimate, moe, fmt) {
+  if (estimate == null) {
+    return `<div class="ro-stat"><span class="ro-stat-label">${label}</span><span class="ro-stat-na">not published at this level</span></div>`;
+  }
+  const moeStr = moe == null ? "" : ` <span class="ro-moe">± ${fmt(moe)}</span>`;
+  return `<div class="ro-stat"><span class="ro-stat-label">${label}</span><span class="ro-stat-val">${fmt(estimate)}${moeStr}</span></div>`;
+}
+
+function statBlock(props) {
+  if (!("POP20" in props)) return "";
+  const p = props;
+  const yr = p.ACS_YEAR;
+  const rows = [
+    statRow("2020 Census", p.POP20, null, (v) => NUM.format(v)),
+    statRow(`ACS 1-yr${yr ? ` (${yr})` : ""} population`, p.ACS1_POP, p.ACS1_POP_M, (v) => NUM.format(v)),
+    statRow(`ACS 5-yr${yr ? ` (${yr})` : ""} population`, p.ACS5_POP, p.ACS5_POP_M, (v) => NUM.format(v)),
+    statRow("Median household income (1-yr)", p.ACS1_INC, p.ACS1_INC_M, (v) => MONEY.format(v)),
+    statRow("Median household income (5-yr)", p.ACS5_INC, p.ACS5_INC_M, (v) => MONEY.format(v)),
+  ];
+  return `<div class="ro-stats">${rows.join("")}</div>`;
+}
+
 function showReadout(spec, feature, geoid) {
   const box = document.getElementById("readout");
   const raw = spec.id ? feature.properties[spec.id] : null;
   const name = feature.properties[spec.name];
-
-  // Where a layer carries population, show it — the readout is the one place
-  // in the tour with room for an actual number rather than a description.
-  const pop = spec.popProp ? +feature.properties[spec.popProp] : NaN;
-  const popLine = Number.isFinite(pop)
-    ? `<div class="ro-pop">${pop.toLocaleString()} people <span>2020 estimates base</span></div>`
-    : "";
+  const stats = statBlock(feature.properties);
 
   if (!raw) {
-    box.innerHTML = name ? `<div class="ro-name">${name}</div>${popLine}` : "";
+    box.innerHTML = name ? `<div class="ro-name">${name}</div>${stats}` : "";
     return;
   }
 
@@ -565,8 +592,8 @@ function showReadout(spec, feature, geoid) {
 
   box.innerHTML =
     `<div class="ro-name">${name || ""}</div>` +
-    popLine +
-    `<div class="ro-geoid">${chunks}${tail}</div>`;
+    `<div class="ro-geoid">${chunks}${tail}</div>` +
+    stats;
 }
 
 function clearReadout() {

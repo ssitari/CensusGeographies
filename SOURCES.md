@@ -12,6 +12,50 @@ Quote verbatim where possible. Paraphrase drifts.
 | tract | Status | Statistical — "small, relatively permanent statistical subdivisions of a county or statistically equivalent entity" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 | block-group | Typical size | "generally defined to contain between 600 and 3,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 
+## Population and ACS stats attached to the hover readout — checked 2026-08-19
+
+`scripts/attach_population.py` writes 2020 Census totals, ACS 1-year and
+5-year population with margins of error, and median household income onto
+most hoverable layers. NTAs and CDTAs are deliberately not covered yet — a
+later pass. Every gap below was found by running real API calls, not
+assumed from the documented rules alone.
+
+- **Congressional districts are pinned to 2021, not 2024.** NY redistricted
+  in 2022; the boundaries this tour draws (pygris's 2020-vintage cb file)
+  are the pre-2022, 27-district 116th Congress map — the same map the 2020
+  Census itself was tabulated against. Checked every ACS vintage back to
+  2019: 2021 is the last year, for both ACS1 and ACS5, still tabulated on 27
+  districts. 2022 onward reports 26. Joining current-year data onto this
+  map by district number would have silently attached the wrong population
+  to several districts, since 2022 redrew boundaries, not just numbers.
+  POP20 is unaffected — the 2020 Census reference date falls inside the
+  116th Congress, so it already matches by construction.
+- **PUMAs have no 2020 Census total.** `dec/pl` returns HTTP 400 for PUMA
+  geography — 2020 PUMA boundaries weren't finalized until 2022, after the
+  2020 Census, so the decennial file has no native way to tabulate by them.
+  ACS 1-year and 5-year both work and are vintage-matched (verified earlier
+  — see the PUMA note above — that 3604109 in this build is the true 2020
+  PUMA, not the 2010 one pygris's default call would have returned).
+- **ZCTAs have no 2020 Census total and no ACS 1-year, only ACS 5-year.**
+  Both return HTTP 400. Not a bug in the request — no such product exists.
+- **Tracts and block groups never get ACS 1-year**, by Census rule, not by
+  omission — confirmed directly: `acs/acs1` returns HTTP 400 for tract
+  geography regardless of query. Block groups get ACS 5-year only.
+- **Blocks get 2020 Census only.** No ACS product has ever existed at the
+  block level.
+- **4 of 56 states/territories have no ACS or Census API product under
+  these endpoints**: American Samoa, Guam, the Northern Mariana Islands, and
+  the U.S. Virgin Islands. Puerto Rico does have full data. These four are
+  the same ones `d3.geoAlbersUsa` already can't draw — see the map's own
+  off-map notice.
+- **MOE sentinel values.** Census encodes "not computed" or "not applicable"
+  as large negative placeholders (`-555555555` and similar) rather than
+  leaving the cell blank — seen directly on the nation and state population
+  MOEs, which are suppressed at that scale. The attach script treats
+  anything at or beyond that magnitude as absent, not as a real number.
+- **Variables used**: `B01003_001E`/`_001M` (total population), `B19013_001E`/`_001M`
+  (median household income), `P1_001N` (2020 Census total, from `dec/pl`).
+
 ## Summary level (SUMLEV) codes — checked 2026-08-19
 
 Added to the "What are the IDs?" field for each step while merging in Eric's
