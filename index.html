@@ -45,6 +45,10 @@
     #stepper button {
       font: inherit;
       font-size: 11px;
+      /* Matches the geography rail's own node weight (`.gd-node text`) —
+         font-family already inherits the same system stack from body, so
+         weight was the one thing making the two read as different type. */
+      font-weight: 600;
       padding: 4px 9px;
       border: 0.5px solid #ddd;
       background: #fff;
@@ -79,7 +83,7 @@
        (#fff / #ddd panels, #97382f current / #2b4a6f related), rather than
        introducing a separate token system for one more component. */
     #geo-nav {
-      width: 268px; flex-shrink: 0; background: #fff;
+      width: 322px; flex-shrink: 0; background: #fff;
       border-right: 0.5px solid #ddd; overflow-y: auto; overflow-x: hidden;
       padding: 14px 10px;
       /* Centered when the window is tall enough to show the whole rail with
@@ -91,24 +95,24 @@
 
     .gd-node { cursor: pointer; }
     .gd-node rect {
-      fill: #fff; stroke: #c7c3bc; stroke-width: 1.4px;
+      fill: #fff; stroke: #c7c3bc; stroke-width: 1.7px;
       transition: fill .12s, stroke .12s, opacity .15s;
     }
-    .gd-node.gd-spine rect { stroke: #9a958b; stroke-width: 2px; }
+    .gd-node.gd-spine rect { stroke: #9a958b; stroke-width: 2.4px; }
     .gd-node text {
-      font-size: 12px; font-weight: 600; fill: #333;
+      font-size: 14px; font-weight: 600; fill: #333;
       text-anchor: middle; dominant-baseline: middle;
       pointer-events: none; transition: fill .12s, opacity .15s;
     }
     .gd-node.gd-spine text { font-weight: 700; }
     .gd-dot { fill: #8a5a1f; }
-    .gd-node:focus-visible rect { outline: 2.5px solid #2b4a6f; outline-offset: 1px; }
+    .gd-node:focus-visible rect { outline: 3px solid #2b4a6f; outline-offset: 1px; }
 
     .gd-edge {
-      fill: none; stroke: #c7c3bc; stroke-width: 1.3px;
+      fill: none; stroke: #c7c3bc; stroke-width: 1.6px;
       transition: stroke .12s, stroke-width .12s, opacity .15s;
     }
-    .gd-spine-edge { stroke: #9a958b; stroke-width: 1.8px; }
+    .gd-spine-edge { stroke: #9a958b; stroke-width: 2.2px; }
 
     #gd-svg.gd-focused .gd-node,
     #gd-svg.gd-focused .gd-edge { opacity: .3; }
@@ -116,11 +120,11 @@
     #gd-svg.gd-focused .gd-node.gd-related,
     #gd-svg.gd-focused .gd-edge.gd-related { opacity: 1; }
 
-    .gd-node.gd-current rect { fill: rgba(151,56,47,.09); stroke: #97382f; stroke-width: 2px; }
+    .gd-node.gd-current rect { fill: rgba(151,56,47,.09); stroke: #97382f; stroke-width: 2.4px; }
     .gd-node.gd-current text { fill: #97382f; }
-    .gd-node.gd-related rect { fill: rgba(43,74,111,.10); stroke: #2b4a6f; stroke-width: 1.8px; }
+    .gd-node.gd-related rect { fill: rgba(43,74,111,.10); stroke: #2b4a6f; stroke-width: 2.2px; }
     .gd-node.gd-related text { fill: #2b4a6f; }
-    .gd-edge.gd-related { stroke: #2b4a6f; stroke-width: 2px; }
+    .gd-edge.gd-related { stroke: #2b4a6f; stroke-width: 2.4px; }
 
     #map-wrap { flex: 1; position: relative; min-width: 0; }
     /* One pane per map. Equal widths, so the shared projection puts the same

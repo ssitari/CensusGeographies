@@ -61,11 +61,11 @@ export function mountDiagram(container, opts) {
       class: "gd-node gd-" + n.family, tabindex: "0", role: "button",
       "aria-label": "Go to " + n.label,
     });
-    g.appendChild(el("rect", { x: b.x - b.w / 2, y: b.y - b.h / 2, width: b.w, height: b.h, rx: 5 }));
-    const t = el("text", { x: b.x + (n.local ? 5 : 0), y: b.y + 1 });
+    g.appendChild(el("rect", { x: b.x - b.w / 2, y: b.y - b.h / 2, width: b.w, height: b.h, rx: 6 }));
+    const t = el("text", { x: b.x + (n.local ? 6 : 0), y: b.y + 1 });
     t.textContent = n.label;
     g.appendChild(t);
-    if (n.local) g.appendChild(el("circle", { class: "gd-dot", cx: b.x - b.w / 2 + 13, cy: b.y, r: 3.2 }));
+    if (n.local) g.appendChild(el("circle", { class: "gd-dot", cx: b.x - b.w / 2 + 16, cy: b.y, r: 3.8 }));
 
     g.addEventListener("mouseenter", () => previewNodes([id]));
     g.addEventListener("focus", () => previewNodes([id]));
