@@ -298,7 +298,11 @@ export const STEPS = [
       {
         title: "NTAs",
         layer: "nta",
-        highlight: ["MN0901"],
+        // All three NTAs that make up CDTA MN09: Morningside Heights,
+        // Manhattanville-West Harlem, Hamilton Heights-Sugar Hill. Matches
+        // the single highlighted patch on the CDTA pane — three pieces on
+        // the left tiling the one piece on the right.
+        highlight: ["MN0901", "MN0902", "MN0903"],
         labels: ["nta"],
       },
       {
