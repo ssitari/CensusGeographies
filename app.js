@@ -610,7 +610,7 @@ function renderCallout(step) {
     <dl>
       ${field("What is it?", c.size)}
       ${field("What can you get?", c.acs)}
-      ${field("What are the IDs?", c.geoid.example === TODO ? null : c.geoid.example)}
+      ${field("What are the IDs?", c.ids)}
       ${field("What else should I know?", c.gotcha)}
     </dl>
     ${

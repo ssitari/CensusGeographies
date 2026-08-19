@@ -12,6 +12,42 @@ Quote verbatim where possible. Paraphrase drifts.
 | tract | Status | Statistical — "small, relatively permanent statistical subdivisions of a county or statistically equivalent entity" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 | block-group | Typical size | "generally defined to contain between 600 and 3,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 
+## Summary level (SUMLEV) codes — checked 2026-08-19
+
+Added to the "What are the IDs?" field for each step while merging in Eric's
+first full pass at the callout text. Verified against Census documentation
+rather than carried over as written, and two of the drafted values turned out
+to be wrong:
+
+| Geography | Summary level | Source |
+|---|---|---|
+| Nation | 010 | [Cartographic Boundary File Summary Level Codes](https://www.census.gov/programs-surveys/geography/technical-documentation/naming-convention/cartographic-boundary-file/carto-boundary-summary-level.html) |
+| Region | 020 | same |
+| Division | 030 | same |
+| State | 040 | same |
+| County | 050 | [Frequently Used Summary Levels](https://www2.census.gov/programs-surveys/decennial/rdo/about/2020-census-program/Phase3/SupportMaterials/FrequentSummaryLevels.pdf) |
+| Place | 160 | same |
+| Census Tract | 140 | same |
+| **Block Group** | **150** | same — drafted as 140 (tract's code, reused by mistake); corrected |
+| **Block** | **750** | same — drafted as 101; corrected |
+| Congressional District | 500 | same |
+| PUMA | 795 | [PUMA5 summary level](https://www2.census.gov/geo/pdfs/reference/puma/2010_PUMA_Equivalency_Summary_Levels.pdf) |
+| ZCTA5 | 860 | [ZCTA5 summary level](https://www2.census.gov/data/api-documentation/using-data-census-gov-differences-in-zcta_zip-code-summary-levels.pdf) |
+
+Two more corrections made in the same pass, both against facts already
+verified earlier in this project rather than new research:
+
+- The region/division step's `size` text originally read "four regions,
+  which in turn are comprised by a total of 12 regions" — a slip; the
+  correct structure (confirmed by spatial join earlier — see "4 regions, 9
+  divisions" above) is 4 regions and 9 divisions.
+- The NTA/CDTA step's `gotcha` text said "There are 59 of these [CDTAs]" —
+  the verified count elsewhere in this file is 71.
+- Separately, the PUMA step's `geoid.example` had read `3604308` since the
+  step was first built — a typo, inconsistent with every other reference to
+  the Columbia PUMA (`3604109`) in this file, the map's `highlight`, and the
+  new `ids` text. Fixed to match.
+
 ## Terms of use — checked 2026-08-15
 
 | Source | Status | Obligation |

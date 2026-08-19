@@ -40,7 +40,13 @@ export const NEST_KEYS = ["nation", "state", "county", "tract"];
 //              boundaries, null = not applicable at this level
 //    size      typical population / count range, VERBATIM from the source
 //    acs       which ACS products publish it
-//    geoid     { pattern, example, parts: [[label, chars], ...] }
+//    geoid     { pattern, example, parts: [[label, chars], ...] } — powers the
+//              map's hover readout (the coloured digit chunks) and is
+//              validated by scripts/check_data.mjs. Not shown directly in
+//              the callout; `ids` below is what readers see.
+//    ids       prose for "What are the IDs?" — the digit/code pattern in
+//              words, e.g. "5 digit FIPS code including state (36061)".
+//              Usually restates geoid.example inline, so the two agree.
 //    gotcha    ERIC WRITES THESE. The one thing people get wrong.
 //    source    URL the factual fields came from
 // ─────────────────────────────────────────────────────────────────────────────
@@ -56,11 +62,12 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: null, state: null, county: null, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "Not surprisingly, the broadest geographic unit is the entire country",
+      acs: "Decennial Census totals and ACS estimates for all samples",
       // TIGER gives the nation feature the literal GEOID "US", not a digit.
       geoid: { pattern: "US", example: "US", parts: [["nation", 2]] },
-      gotcha: TODO,
+      ids: "No FIPS code, summary level 010",
+      gotcha: "National level downloads include data for all 50 states and Washington D.C. (not Puerto Rico or other territories, which will need separate extraction).",
       source: null,
     },
   },
@@ -84,10 +91,11 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: null, county: null, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "The Census divides the 50 states into four regions, which are in turn comprised of nine divisions.",
+      acs: "Decennial Census totals and ACS estimates for all samples",
       geoid: { pattern: "D", example: "1", parts: [["division", 1]] },
-      gotcha: TODO,
+      ids: "No FIPS code, summary level 020 (region) and 030 (division)",
+      gotcha: "These definitions are generally persistent and primarily used by the Census itself to represent what it considers to be socioeconomically and culturally coherent areas. Your mileage will vary.",
       source: null,
     },
   },
@@ -107,10 +115,11 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: true, state: null, county: null, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "The first-level administrative districts in the US.",
+      acs: "Decennial Census totals and ACS estimates for all samples",
       geoid: { pattern: "SS", example: "36", parts: [["state", 2]] },
-      gotcha: TODO,
+      ids: "2 digit FIPS code (NY is 36), summary level 040",
+      gotcha: "The 50 states and Washington DC. These tend to be persistent. U.S. territories use the same leading 2-digit FIPS pattern and tend to be treated the same way in most databases.",
       source: null,
     },
   },
@@ -128,10 +137,11 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: null, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "The second-level administrative districts.",
+      acs: "Decennial Census totals and ACS 5-year samples. 1-year samples for larger counties.",
       geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
-      gotcha: TODO,
+      ids: "5 digit FIPS code including the state code (New York County is 36061), summary level 050",
+      gotcha: "These tend to be persistent. Nest in and wholly comprise states, including water surfaces. Counties range very widely in population — from under 100 to almost 10 million — so ACS 1-year and 3-year samples are only available for larger counties. Second-level administrative units that aren't counties (parishes in Louisiana, for example) still show up here.",
       source: null,
     },
   },
@@ -150,10 +160,11 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: false, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "US House of Representatives political districts.",
+      acs: "Decennial Census totals and ACS estimates for all samples",
       geoid: { pattern: "SSDD", example: "3623", parts: [["state", 2], ["district", 2]] },
-      gotcha: TODO,
+      ids: "4 digit FIPS code (NY's northernmost CD is 3621), summary level 500",
+      gotcha: "The Decennial Census is used to inform the delineation of Congressional (and other state legislative) districts, and also uses those districts to release summaries. By law, Congressional Districts have roughly similar populations — currently over 700,000 people — and are redrawn at least every 10 years. Redistricting has become more common than that in practice. State legislative district summaries are also available.",
       source: null,
     },
   },
@@ -183,10 +194,11 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: false, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "A population concentration, often a municipality, that the Census designates or recognizes.",
+      acs: "Decennial Census totals and ACS 5-year samples. 1-year samples for larger places.",
       geoid: { pattern: "SSPPPPP", example: "3655948", parts: [["state", 2], ["place", 5]] },
-      gotcha: TODO,
+      ids: "7 digit FIPS code (New York City is 3651000), summary level 160",
+      gotcha: "May or may not be persistent. Nests in states, including water surfaces. The Census splits this geography into two categories — incorporated places and census-designated places. This is what you'd typically use to extract data by municipality or city, not metropolitan area. Places range very widely in population, so ACS 1-year and 3-year samples are only available for larger ones. Places don't overlap or cross state lines, and not all areas or populations are inside a place.",
       source: null,
     },
   },
@@ -222,6 +234,7 @@ export const STEPS = [
       // a county GEOID. That mismatch with the step's subject — NYC the
       // *place* — is the lesson; say so in `gotcha`.
       geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
+      ids: TODO,
       gotcha: TODO,
       source: null,
     },
@@ -249,10 +262,11 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: false, tract: true },
-      size: TODO,
-      acs: TODO,
-      geoid: { pattern: "SSPPPPP", example: "3604308", parts: [["state", 2], ["puma", 5]] },
-      gotcha: TODO,
+      size: "Census-designated neighborhoods used for microdata samples.",
+      acs: "Decennial Census totals and ACS estimates for all samples, including microdata extracts",
+      geoid: { pattern: "SSPPPPP", example: "3604109", parts: [["state", 2], ["puma", 5]] },
+      ids: "7 digit FIPS code (this one is 3604109), summary level 795",
+      gotcha: "PUMAs are Census-derived neighborhoods created for microdata samples, though Census and ACS summary data are available for them too. A PUMA typically has between 100,000 and 200,000 people and nests within a state. Boundaries may change every 10 years and their area can vary widely with population density. In NYC, PUMA boundaries are usually drawn to line up fairly closely with Community District planning areas and CDTAs.",
       source: null,
     },
   },
@@ -302,8 +316,8 @@ export const STEPS = [
     callout: {
       status: "Locally defined",
       nests: { nation: true, state: true, county: false, tract: true },
-      size: TODO,
-      acs: TODO,
+      size: "New York City Planning Department–designated neighborhood constructs.",
+      acs: "Decennial Census totals and ACS 5-year samples",
       // DCP's own codes, not federal ones — and they decompose too: a borough
       // prefix followed by a four-digit number. Worth pointing at, since the
       // contrast with an 11-digit federal GEOID is the visible difference
@@ -313,7 +327,8 @@ export const STEPS = [
         example: "MN0901",
         parts: [["borough", 2], ["nta", 4]],
       },
-      gotcha: TODO,
+      ids: "NTAs use a 4–6 digit alphanumeric code (example: MN0901); CDTAs use a 4 digit alphanumeric code (example: MN09)",
+      gotcha: "These neighborhood constructs are aggregations of census tracts designated by NYC Planning to approximate neighborhood units. Neighborhood Tabulation Areas (NTAs) are meant to approximate vernacular neighborhoods — ones with names residents would recognize and boundaries that make sense — and typically hold a few tens of thousands of people across 8 or 9 tracts. Community District Tabulation Areas (CDTAs) are aggregations of NTAs meant to approximate NYC Planning's Community District areas, which city agencies widely use. There are 71 of these, typically over 100,000 people and 3–4 NTAs each. An individual CDTA usually lines up reasonably closely with a Census PUMA, which can let researchers use microdata samples as a CDTA approximation.",
       source: "https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020",
     },
   },
@@ -342,10 +357,11 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: false, county: false, tract: false },
-      size: TODO,
-      acs: TODO,
+      size: "Areal approximations of USPS ZIP Code designations.",
+      acs: "Decennial Census totals and ACS 5-year samples",
       geoid: { pattern: "ZZZZZ", example: "10027", parts: [["zcta", 5]] },
-      gotcha: TODO,
+      ids: "5 digit code matching the USPS designation (example: 10027), summary level 860",
+      gotcha: "ZIP Codes as used by the U.S. Postal Service have no official areal definition — they're lists of mailing addresses. They're commonly used for neighborhood analysis anyway, especially in business research, so since 2000 the Census Bureau has built ZIP Code Tabulation Areas (ZCTAs) to approximate them, updated every 10 years. They vary widely in population, typically thousands to tens of thousands of people, and their relationship to current ZIP Codes may drift from USPS usage, which can also change at any time. A ZCTA may split a census tract and can span county or state boundaries. Unless you need data at the ZIP Code level specifically, consider a tract instead as your neighborhood unit.",
       source: null,
     },
   },
@@ -371,13 +387,14 @@ export const STEPS = [
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: null },
       size: "1,200–8,000 people, with an optimum size of 4,000 people",
-      acs: TODO,
+      acs: "Decennial Census totals and ACS 5-year samples",
       geoid: {
         pattern: "SSCCCTTTTTT",
         example: "36061020500",
         parts: [["state", 2], ["county", 3], ["tract", 6]],
       },
-      gotcha: TODO,
+      ids: "11 digit FIPS code (this tract is 36061020500), summary level 140",
+      gotcha: "Census tracts are likely the best known and most widely used of the “neighborhood” level census geographies. They're delineated by the Census Bureau and may change every 10 years alongside the Decennial Census. Tracts are designed to hold roughly 4,000 people (typical range 1,000–8,000), so their physical size varies widely with population density.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -403,13 +420,14 @@ export const STEPS = [
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: true },
       size: "generally defined to contain between 600 and 3,000 people",
-      acs: TODO,
+      acs: "Decennial Census totals and ACS 5-year samples (usually)",
       geoid: {
         pattern: "SSCCCTTTTTTB",
         example: "360610205001",
         parts: [["state", 2], ["county", 3], ["tract", 6], ["bg", 1]],
       },
-      gotcha: TODO,
+      ids: "12 digit FIPS code (this block group is 360610205001), summary level 150",
+      gotcha: "There are typically 1–9 block groups per tract. Like tracts, they may change every 10 years. The ACS provides 5-year estimates at the block group level, but use of these is sometimes controversial — estimates can be highly uncertain at this scale, and data is often suppressed for small sample sizes.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -433,14 +451,15 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: true },
-      size: TODO,
-      acs: TODO,
+      size: "The smallest census unit and the building block of all other geographies.",
+      acs: "Decennial Census totals only",
       geoid: {
         pattern: "SSCCCTTTTTTBBBB",
         example: "360610205001011",
         parts: [["state", 2], ["county", 3], ["tract", 6], ["block", 4]],
       },
-      gotcha: TODO,
+      ids: "15 digit FIPS code (this block is 360610205001011), summary level 750",
+      gotcha: "This is the most atomistic census geography, and every other geography here is an aggregate of it. Blocks can be city blocks, but may be much smaller, and their boundaries can be drawn from a variety of different features. Population can be as low as zero. Only tabulations from the full Decennial Census enumeration are available at the block level — there's no ACS data here.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
