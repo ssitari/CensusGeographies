@@ -608,10 +608,10 @@ function renderCallout(step) {
       ${nestBadge(c.nests)}
     </header>
     <dl>
-      ${field("Typical size", c.size)}
-      ${field("Available in", c.acs)}
-      ${field("GEOID", c.geoid.example === TODO ? null : c.geoid.example)}
-      ${field("The gotcha", c.gotcha)}
+      ${field("What is it?", c.size)}
+      ${field("What can you get?", c.acs)}
+      ${field("What are the IDs?", c.geoid.example === TODO ? null : c.geoid.example)}
+      ${field("What else should I know?", c.gotcha)}
     </dl>
     ${
       c.source

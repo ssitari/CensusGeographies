@@ -74,12 +74,21 @@ either order.
 
 ## Writing the tour
 
-Each step in `steps.js` has a callout with these fields:
+Each step in `steps.js` has a callout with these fields. Labels on the page
+are plain-language, aimed at the research guide audience rather than a GIS
+one; the field names in the code (in parentheses below) are the technical
+ones and haven't changed, so this is also the map from what you see on the
+page back to what to edit in `steps.js`.
 
-- **Typical size** — population or count range, quoted verbatim from the source
-- **Available in** — which ACS products publish this level
-- **GEOID** — the digit pattern and a worked example
-- **The gotcha** — the one thing people get wrong
+- **What is it?** (`size`) — population or count range, quoted verbatim from the source
+- **What can you get?** (`acs`) — which ACS products publish this level
+- **What are the IDs?** (`geoid`) — the digit pattern and a worked example
+- **What else should I know?** (`gotcha`) — the one thing people get wrong
+
+These labels are the one piece of UI copy likely to get revised by whoever
+edits this tour next — they live in a single place, the four `field(...)`
+calls in `renderCallout()` in `app.js`, so relabeling again later is a
+four-line change.
 
 Unfilled fields carry the `TODO` sentinel and render on the page in red as
 *not written yet*, so unfinished copy is impossible to ship by accident.
