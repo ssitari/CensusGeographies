@@ -169,6 +169,33 @@ export const STEPS = [
     },
   },
   {
+    id: "msa",
+    label: "Metro Area",
+    scope: "New York-Newark-Jersey City, NY-NJ-PA",
+    layer: "msa",
+    // The 23 counties this MSA is built from — 10 in New York, 12 in New
+    // Jersey, 1 in Pennsylvania (Pike County) — drawn as context underneath
+    // the metro outline. The first step in this tour whose context reaches
+    // outside New York.
+    context: ["county-msa"],
+    projection: "local",
+    callout: {
+      status: "Statistical",
+      // Crosses three states by definition, which is why this is the only
+      // step in the tour with no county or state to nest under — see the
+      // rail, where this connects straight to Nation.
+      nests: { nation: true, state: false, county: false, tract: null },
+      size: TODO,
+      acs: TODO,
+      // CBSA codes are a flat 5-digit number, not built from state+county
+      // like most of this tour's other IDs.
+      geoid: { pattern: "CCCCC", example: "35620", parts: [["cbsa", 5]] },
+      ids: TODO,
+      gotcha: TODO,
+      source: null,
+    },
+  },
+  {
     id: "place",
     label: "Places",
     scope: "New York metropolitan area",
@@ -199,43 +226,6 @@ export const STEPS = [
       geoid: { pattern: "SSPPPPP", example: "3655948", parts: [["state", 2], ["place", 5]] },
       ids: "7 digit FIPS code (New York City is 3651000), summary level 160",
       gotcha: "May or may not be persistent. Nests in states, including water surfaces. The Census splits this geography into two categories — incorporated places and census-designated places. This is what you'd typically use to extract data by municipality or city, not metropolitan area. Places range very widely in population, so ACS 1-year and 3-year samples are only available for larger ones. Places don't overlap or cross state lines, and not all areas or populations are inside a place.",
-      source: null,
-    },
-  },
-
-  // ── transition: the inversion. NYC is one place holding five counties. ─────
-  {
-    id: "nyc",
-    label: "New York City",
-    scope: "One place, five counties",
-    layer: "borough",
-    // Metro counties outside the city only. The boroughs come from DCP's
-    // water-excluded file, so Census counties underneath them put a coarse
-    // grey collar of open water around each borough that lined up with
-    // nothing. Stopping at the city line keeps Westchester and Nassau for
-    // orientation without the mismatch.
-    context: ["county-outer"],
-    // Labels strip the "(Kings County)" half, so these read as Brooklyn,
-    // Queens, Manhattan — the names people actually use, against a readout
-    // that still shows the county underneath.
-    labels: ["borough"],
-    projection: "local",
-    transition: true,
-    inversion: true, // app draws this one differently — see note in README
-    // The shapes here are counties and they nest; the callout's subject, NYC
-    // the place, does not. Style follows the shapes. See app.js draw().
-    unitStyle: "fill",
-    callout: {
-      status: "Legal",
-      nests: { nation: true, state: true, county: false, tract: null },
-      size: TODO,
-      acs: TODO,
-      // The units drawn here are the five counties, so the readout decomposes
-      // a county GEOID. That mismatch with the step's subject — NYC the
-      // *place* — is the lesson; say so in `gotcha`.
-      geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
-      ids: TODO,
-      gotcha: TODO,
       source: null,
     },
   },

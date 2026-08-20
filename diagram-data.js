@@ -15,23 +15,29 @@ export const SPINE = [
   { id: "division",   label: "Division",     y: 184 },
   { id: "state",      label: "State",        y: 252 },
   { id: "county",     label: "County",       y: 338 },
-  { id: "tract",      label: "Tract",        y: 746 },
-  { id: "blockgroup", label: "Block Group",  y: 818 },
-  { id: "block",      label: "Block",        y: 885 },
+  { id: "tract",      label: "Tract",        y: 808 },
+  { id: "blockgroup", label: "Block Group",  y: 880 },
+  { id: "block",      label: "Block",        y: 947 },
 ];
 
 // Everything that attaches at one or two points on the spine and stops.
 // `up`/`down` are the real edges; `local` marks a not-a-Census-product dot.
 export const ANCILLARY = [
   { id: "cd", label: "Cong. District", y: 364, up: ["state"], down: ["block"], local: false },
-  { id: "place", label: "Place", y: 426, up: ["state"], down: ["block"], local: false },
+  // Crosses three states by definition (this tour's example, New York-Newark-
+  // Jersey City, is NY-NJ-PA), which is why it nests in Nation rather than
+  // State like every other legal geography in this column — there is no
+  // single state for it to nest under. Built from whole counties, hence the
+  // downward edge straight to County rather than anything in between.
+  { id: "msa", label: "MSA", y: 426, up: ["nation"], down: ["county"], local: false },
+  { id: "place", label: "Place", y: 488, up: ["state"], down: ["block"], local: false },
   // ZCTAs ship as one national file with no state subset (verified building
   // this tour — see SOURCES.md), which is why this nests in Nation rather
   // than State like everything else in the column.
-  { id: "zcta", label: "ZCTA", y: 488, up: ["nation"], down: ["block"], local: false },
-  { id: "puma", label: "PUMA", y: 550, up: ["state"], down: ["tract"], local: false },
-  { id: "cdta", label: "CDTA", y: 612, up: ["county"], down: ["nta"], local: true },
-  { id: "nta", label: "NTA", y: 674, up: ["cdta"], down: ["tract"], local: true },
+  { id: "zcta", label: "ZCTA", y: 550, up: ["nation"], down: ["block"], local: false },
+  { id: "puma", label: "PUMA", y: 612, up: ["state"], down: ["tract"], local: false },
+  { id: "cdta", label: "CDTA", y: 674, up: ["county"], down: ["nta"], local: true },
+  { id: "nta", label: "NTA", y: 736, up: ["cdta"], down: ["tract"], local: true },
 ];
 
 export const NODES = {};
@@ -53,6 +59,7 @@ export const NODE_TO_STEP = {
   blockgroup: "block-group",
   block: "block",
   cd: "congressional-district",
+  msa: "msa",
   place: "place",
   zcta: "zcta",
   puma: "puma",
@@ -60,19 +67,17 @@ export const NODE_TO_STEP = {
   nta: "nta-cdta",
 };
 
-// Which node(s) light up as "you are here" for each step. Almost every step
-// maps to exactly one node; two don't. The NYC step teaches the inversion —
-// New York City the *place* containing five *counties* — so both light up
-// even though neither is the other's edge on this diagram. The combined
-// NTA/CDTA step lights up both of its panes.
+// Which node(s) light up as "you are here" for each step. Every step but one
+// maps to exactly one node: the combined NTA/CDTA step lights up both of its
+// panes.
 export const STEP_TO_NODES = {
   "nation": ["nation"],
   "region-division": ["division"],
   "state": ["state"],
   "county": ["county"],
   "congressional-district": ["cd"],
+  "msa": ["msa"],
   "place": ["place"],
-  "nyc": ["place", "county"],
   "puma": ["puma"],
   "nta-cdta": ["nta", "cdta"],
   "zcta": ["zcta"],
@@ -84,7 +89,7 @@ export const STEP_TO_NODES = {
 // ── geometry ─────────────────────────────────────────────────────────────
 export const SPINE_X = 114, SPINE_W = 180, SPINE_H = 44;
 export const ANC_X = 360, ANC_W = 204, ANC_H = 36;
-export const VIEW_W = 486, VIEW_H = 931;
+export const VIEW_W = 486, VIEW_H = 993;
 
 export function box(node) {
   return node.family === "spine"

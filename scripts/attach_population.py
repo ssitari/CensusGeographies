@@ -214,6 +214,21 @@ def main():
 
     merge_into_file("borough.json", "borough", county_lookup)
 
+    print(f"\nmetropolitan statistical area")
+    # CBSA is its own geography dimension, not built from state+county like
+    # most of this pipeline — one query, one row, no zero-padding or
+    # concatenation needed. The ACS product's own NAME drops the "-PA" this
+    # CBSA's full name carries (verified: it still reports the correct
+    # population including Pike County, PA — a labelling quirk in the ACS
+    # product, not a data gap), which is exactly why this script only ever
+    # merges numeric properties by GEOID and never touches NAME.
+    cbsa_geo = "metropolitan statistical area/micropolitan statistical area:35620"
+    dec = decennial(cbsa_geo)
+    a1 = acs(ACS_YEAR, "acs1", cbsa_geo)
+    a5 = acs(ACS_YEAR, "acs5", cbsa_geo)
+    lookup = build_lookup(lambda k: "35620", a1, a5, dec, ACS_YEAR)
+    merge_into_file("msa.json", "msa", lookup)
+
     print(f"\nnew york city")
     dec = decennial("public use microdata area:*", f"state:{NY}")
     a1 = acs(ACS_YEAR, "acs1", "public use microdata area:*", f"state:{NY}")

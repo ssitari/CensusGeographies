@@ -23,6 +23,7 @@ so the vintage is pinned and labelled rather than chased.
 
 import pathlib
 import geopandas as gpd
+import pandas as pd
 from pygris import (
     regions, divisions, states, counties, places,
     core_based_statistical_areas,
@@ -318,6 +319,26 @@ def main():
     write(within(counties(state=NY, year=YEAR, cb=True, resolution="500k"), here),
           "county-metro")
 
+    print("metropolitan statistical area")
+    # The MSA itself is the drawn/hovered unit — one polygon, the same `here`
+    # CBSA already found above for the Places step. Reused rather than
+    # refetched: it is the same lookup, and finding it twice would be two
+    # chances for the two copies to quietly drift apart.
+    write(here, "msa", id_col="GEOID")
+
+    # Constituent counties, drawn as context underneath the MSA outline. The
+    # first time this project has needed county geometry outside New York:
+    # this CBSA is NY-NJ-PA, 23 counties across three states — 10 NY, 12 NJ,
+    # 1 PA (Pike County). Found the same way county-metro was: fetch each
+    # state's counties, keep the ones whose centroid falls inside the CBSA
+    # polygon.
+    msa_counties = []
+    for st in ["36", "34", "42"]:
+        c = counties(state=st, year=YEAR, cb=True, resolution="500k").to_crs(4326)
+        msa_counties.append(within(c, here))
+    write(gpd.GeoDataFrame(pd.concat(msa_counties, ignore_index=True), crs="EPSG:4326"),
+          "county-msa")
+
     print("new york city")
     co = counties(state=NY, year=YEAR, cb=True, resolution="500k")
 
@@ -335,15 +356,6 @@ def main():
     # where they may around it.
     bb = boroughs(co[co.COUNTYFP.isin(NYC_COUNTIES)], co_full)
     write(bb[bb.GEOID == NY + DEMO_COUNTY], "manhattan", id_col="GEOID", name_col="NAME")
-
-    # Backdrop for the city step: the metro counties *outside* New York City.
-    # The five boroughs are drawn from DCP's water-excluded file, so putting
-    # water-inclusive Census counties underneath them left a coarse grey collar
-    # of open water around every borough that did not line up with anything.
-    # Stopping the backdrop at the city line removes the mismatch and still
-    # gives Westchester and Nassau for orientation.
-    outer = within(counties(state=NY, year=YEAR, cb=True, resolution="500k"), here)
-    write(outer[~outer.GEOID.str[2:].isin(NYC_COUNTIES)], "county-outer")
 
     nyct = nyc_tracts()
 

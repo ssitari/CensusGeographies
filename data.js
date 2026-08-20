@@ -53,7 +53,11 @@ export const DATA = {
   "place-metro": { file: "place-metro.json",  object: "place",    id: ID,   name: NAME,
                    labelWhen: (p) => p.LSAD !== "57", popProp: "POP" },
 
-  "county-outer":{ file: "county-outer.json", object: "county",   id: ID,   name: NAME },
+  msa:           { file: "msa.json",          object: "msa",      id: ID,   name: NAME },
+  // Context only — never a step's own layer, never gets population data.
+  // Spans three states (NY, NJ, PA), the first time this project has needed
+  // county geometry outside New York.
+  "county-msa":  { file: "county-msa.json",   object: "county",   id: ID,   name: NAME },
   borough:       { file: "borough.json",      object: "borough",  id: ID,   name: NAME },
   manhattan:     { file: "manhattan.json",    object: "manhattan",id: ID,   name: NAME },
   puma:          { file: "puma.json",         object: "puma",     id: ID,   name: NAME, labelProp: "SHORT" },

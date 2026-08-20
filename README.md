@@ -19,7 +19,7 @@ and ES modules.
 
 ## What it does
 
-Fourteen steps, navigated with prev/next buttons or the arrow keys, each one
+Thirteen steps, navigated with prev/next buttons or the arrow keys, each one
 framing a single geography and explaining it in a fixed set of fields. Every
 step has its own URL fragment, so a guide can link straight to `#puma`.
 

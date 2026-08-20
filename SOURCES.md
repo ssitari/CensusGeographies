@@ -12,6 +12,42 @@ Quote verbatim where possible. Paraphrase drifts.
 | tract | Status | Statistical — "small, relatively permanent statistical subdivisions of a county or statistically equivalent entity" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 | block-group | Typical size | "generally defined to contain between 600 and 3,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 
+## Metro Area step replaces New York City — checked 2026-08-20
+
+The New York City step (the "inversion" — Place fully containing five
+Counties) is retired. In its place: a Metro Area step, positioned between
+Congressional Districts and Places, teaching the New York-Newark-Jersey City
+CBSA (GEOID 35620).
+
+- **23 counties**, verified by spatial join against the CBSA polygon, not
+  assumed from a published list: 10 in New York (Bronx, Kings, Nassau, New
+  York, Putnam, Queens, Richmond, Rockland, Suffolk, Westchester), 12 in New
+  Jersey (Bergen, Essex, Hudson, Hunterdon, Middlesex, Monmouth, Morris,
+  Ocean, Passaic, Somerset, Sussex, Union), and 1 in Pennsylvania (Pike).
+  First time this project has needed county geometry outside New York.
+- **The ACS product's own NAME field drops the "-PA"** — both `acs/acs1` and
+  `acs/acs5` report this CBSA as "New York-Newark-Jersey City, NY-NJ Metro
+  Area," while the 2020 Decennial (`dec/pl`) and the CBSA boundary file
+  itself both correctly say "NY-NJ-PA." Verified this isn't a data gap:
+  Pike County's population is still included in the ACS total, only the
+  label is truncated. `attach_population.py` already merges by GEOID and
+  never touches NAME, so this cost nothing to work around — worth recording
+  so a future editor doesn't "fix" the tour's NAME to match the shorter one.
+- **CBSA is its own Census API geography dimension** (`for=metropolitan
+  statistical area/micropolitan statistical area:35620`), not built from
+  state+county concatenation like most of this tour's other IDs — a query
+  needs no state filter and no zero-padding.
+- **MSA nests in Nation only** in this tour's rail — it crosses three states
+  by construction, so there is no single state or county for it to nest
+  under. The rail's down-edge goes straight to County, matching how CBSAs
+  are actually built (whole counties, no intermediate level) outside New
+  England, which does not apply here.
+
+The now-orphaned `county-outer` layer (drawn only as backdrop for the deleted
+step) is removed from the build entirely, not just unlinked — the borough
+layer itself stays, since three other steps (PUMAs, NTAs/CDTAs, Tracts) still
+use it as context.
+
 ## Population and ACS stats attached to the hover readout — checked 2026-08-19
 
 `scripts/attach_population.py` writes 2020 Census totals, ACS 1-year and
