@@ -6,7 +6,7 @@
 //  navigate structure.
 // ─────────────────────────────────────────────────────────────────────────────
 
-import { NODES, EDGES, ADJ, NODE_TO_STEP, box, VIEW_W, VIEW_H } from "./diagram-data.js";
+import { NODES, EDGES, NODE_TO_STEP, box, VIEW_W, VIEW_H, relatedTo } from "./diagram-data.js";
 
 const NS = "http://www.w3.org/2000/svg";
 function el(tag, attrs) {
@@ -96,7 +96,7 @@ function paint(ids) {
   const svg = document.getElementById("gd-svg");
   if (!svg) return;
   const related = new Set();
-  for (const id of ids) for (const nb of ADJ[id]) related.add(nb);
+  for (const id of ids) for (const nb of relatedTo(id)) related.add(nb);
 
   svg.classList.toggle("gd-focused", ids.length > 0);
   for (const nid in nodeEls) {
@@ -105,7 +105,7 @@ function paint(ids) {
   }
   for (const k in edgeEls) edgeEls[k].classList.remove("gd-related");
   for (const id of ids) {
-    for (const nb of ADJ[id]) {
+    for (const nb of relatedTo(id)) {
       const e = edgeEls[id + "|" + nb];
       if (e) e.classList.add("gd-related");
     }

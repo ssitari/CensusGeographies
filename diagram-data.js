@@ -115,7 +115,33 @@ export const EDGES = rawEdges.filter(([a, b]) => {
   return true;
 });
 
-// Undirected adjacency, for highlighting.
+// Undirected adjacency — still used to draw every connecting line, and to
+// highlight in both directions for every relationship except the ones below.
 export const ADJ = {};
 for (const id in NODES) ADJ[id] = new Set();
 for (const [a, b] of EDGES) { ADJ[a].add(b); ADJ[b].add(a); }
+
+// [from, to]: hovering `to` will not highlight `from`, even though the line
+// between them still draws and hovering `from` still highlights `to`.
+//
+// MSA -> County is the one case so far. An MSA is built from whole counties,
+// so hovering MSA usefully highlighting County is a real, always-true fact
+// about this example. The reverse is not: "County" on this rail stands for
+// the general concept, and most counties in the country are not part of any
+// MSA, let alone this one — lighting up MSA on every County hover would
+// overstate a relationship that mostly does not hold.
+export const ASYMMETRIC = [["msa", "county"]];
+
+const suppressed = new Set(ASYMMETRIC.map(([from, to]) => `${to}|${from}`));
+
+// What should actually highlight when `id` is hovered — ADJ filtered through
+// the asymmetric exceptions above. Used for both node and edge highlighting,
+// so the two never disagree (a bold line pointing at an unlit box would read
+// as a bug, not a design choice).
+export function relatedTo(id) {
+  const out = new Set();
+  for (const nb of ADJ[id] || []) {
+    if (!suppressed.has(`${id}|${nb}`)) out.add(nb);
+  }
+  return out;
+}
