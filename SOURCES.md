@@ -43,6 +43,36 @@ CBSA (GEOID 35620).
   are actually built (whole counties, no intermediate level) outside New
   England, which does not apply here.
 
+## MSA callout text — checked 2026-08-20
+
+Eric's draft for the four callout fields, checked against live sources before
+merging into `steps.js`. Two corrections made to the draft, both flagged to
+Eric rather than changed silently:
+
+- Drafted as "23 counties in New York and New Jersey" — the verified
+  composition above is 10 NY + 12 NJ + **1 PA (Pike County)** = 23; omitting
+  Pennsylvania and keeping the count at 23 doesn't add up. Changed to "across
+  New York, New Jersey, and Pennsylvania."
+- Drafted as "Census Department" — the agency is the **Census Bureau**,
+  consistent with every other step in the tour. Corrected.
+- **Summary level 310** for Metropolitan Statistical Area/Micropolitan
+  Statistical Area, confirmed against the [Cartographic Boundary File
+  Summary Level Codes](https://www.census.gov/programs-surveys/geography/technical-documentation/naming-convention/cartographic-boundary-file/carto-boundary-summary-level.html)
+  page (not covered by the PL 94-171 summary level list used for the other
+  steps' SUMLEV corrections above — CBSAs aren't a P.L. 94-171 product).
+- **New York-Newark-Jersey City is the largest MSA nationally** — confirmed
+  via `acs/acs5` `B01003_001E` (total population) queried across all CBSAs:
+  19,756,722 vs. 13,012,469 for Los Angeles-Long Beach-Anaheim, the
+  next-largest.
+- **CSA name and composition** — confirmed via `acs/acs5` against `for=combined
+  statistical area:*`: CSA code 408 is officially named exactly "New
+  York-Newark, NY-NJ-CT-PA CSA," matching the draft as written.
+- **"CBSA code," not "FIPS code"** — the draft called the 5-digit identifier
+  a FIPS code. Census's [Metropolitan and Micropolitan Statistical Areas
+  program page](https://www.census.gov/programs-surveys/metro-micro/about.html)
+  uses "CBSA" throughout and never "FIPS" for this identifier; FIPS 6-4
+  covers states, counties, and places, not CBSAs. Corrected to "CBSA code."
+
 The now-orphaned `county-outer` layer (drawn only as backdrop for the deleted
 step) is removed from the build entirely, not just unlinked — the borough
 layer itself stays, since three other steps (PUMAs, NTAs/CDTAs, Tracts) still

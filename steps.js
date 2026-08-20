@@ -185,14 +185,14 @@ export const STEPS = [
       // step in the tour with no county or state to nest under — see the
       // rail, where this connects straight to Nation.
       nests: { nation: true, state: false, county: false, tract: null },
-      size: TODO,
-      acs: TODO,
+      size: "Metropolitan areas as determined by the Census Bureau.",
+      acs: "Decennial Census totals and ACS 5-year samples. 1-year samples for larger areas.",
       // CBSA codes are a flat 5-digit number, not built from state+county
       // like most of this tour's other IDs.
       geoid: { pattern: "CCCCC", example: "35620", parts: [["cbsa", 5]] },
-      ids: TODO,
-      gotcha: TODO,
-      source: null,
+      ids: "5-digit CBSA code (New York-Newark-Jersey City MSA is 35620), summary level 310",
+      gotcha: "The Census Bureau uses a number of geographic definitions to describe urban and metropolitan areas, of which Metropolitan Statistical Areas (MSAs) are just one. MSAs are a type of Core Based Statistical Area (CBSA) and are an aggregation of economically and socially related counties named after a central urban area. New York-Newark-Jersey City is the largest of these, comprised of 23 counties across New York, New Jersey, and Pennsylvania, and is in turn incorporated into the larger New York-Newark, NY-NJ-CT-PA Combined Statistical Area (CSA).",
+      source: "https://www.census.gov/programs-surveys/metro-micro/about.html",
     },
   },
   {
