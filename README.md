@@ -1,10 +1,8 @@
-# Census Geographies — A Guided Tour
+# Census Geographies — A Guided Tour through selected (NYC-centric) census geographies
 
-An interactive walk down the U.S. census geographic hierarchy, from the nation
-to a single city block, built for a library research guide audience with no
-prior exposure to census data.
+This website is a short interactive demonstration of select geographies used for US Census data, in particular the Decennial Census and the American Community Survey (ACS). Built initially for the [Columbia University Libraries census research guide](https://guides.library.columbia.edu/census), this guide is designed for researchers and students that are complete novices to working with Census geographies.  
 
-Built for the [Columbia University Libraries census research guide](https://guides.library.columbia.edu/census).
+To be sure, this guide is non-comprehensive and only includes a limited sample of geographic types.  It is designed with a NYC-centric audience and includes neighborhood delineations (including NTAs and CDTAs) that may not be applicable to other parts of the US.  That said, all data here is in the public domain and you are free to use with attribution.
 
 Built with [D3.js](https://d3js.org). No build step required — plain HTML, CSS,
 and ES modules.
@@ -19,9 +17,7 @@ and ES modules.
 
 ## What it does
 
-Thirteen steps, navigated with prev/next buttons or the arrow keys, each one
-framing a single geography and explaining it in a fixed set of fields. Every
-step has its own URL fragment, so a guide can link straight to `#puma`.
+The website highlights 15 different geographies on 13 different pages, navigated with prev/next buttons or the arrow keys, each page highlighting a single geography and explaining what it is, typical size, and identifiers. A few population and income totals or estimates are provided to give an idea of the typical size (and MOEs) of the units.  Every step has its own URL fragment, so a guide can link straight to `#puma`.  The geographies are ordered approximately and imperfectly in terms of hierarchy.  There is also a hierarchical schematic to the left of the page which indicates the relationships of the variant geographies, this schematic may be used to navigate through the pages. 
 
 The design rests on two decisions worth stating plainly:
 
@@ -32,7 +28,7 @@ footer so nobody mistakes it for one.
 
 **Nesting is shown, not implied.** The census hierarchy is not a clean tree, and
 most introductions hide that. Every step carries a `nests in` badge reading
-`state ✓ · county ✗`, stated in words rather than encoded in a colour key the
+`state ✓ · county ✗`, stated in words rather than encoded in a color key the
 reader would have to learn.
 
 **One set of marks, every frame.** The step's own geography is a red outline;
@@ -49,7 +45,7 @@ Hovering any unit decomposes its GEOID into labelled runs
 (`36061014500` → `36` state · `061` county · `014500` tract), which is the
 fastest way to make an opaque identifier legible.
 
-Where the pipeline found it, the same hover also shows 2020 Census population
+When possible, the same hover also shows 2020 Census population
 plus ACS 1-year and 5-year estimates — with margins of error — and median
 household income. Gaps show rather than hide: tracts and block groups always
 read "not published at this level" for the 1-year figures, which is the
@@ -104,8 +100,8 @@ Unfilled fields carry the `TODO` sentinel and render on the page in red as
 
 **House rule: no factual field gets written from memory.** Sizes, thresholds and
 GEOID patterns come from Census or DCP documentation, the URL goes in `source`,
-and a row goes in `SOURCES.md` at the same time. Three fields are filled in so
-far as worked examples; the rest are deliberately empty.
+and a row goes in `SOURCES.md` at the same time. All fields across all 13 steps
+are filled in; `SOURCES.md` carries a citation for every factual claim.
 
 ---
 
@@ -154,7 +150,7 @@ how many callout fields are still unwritten.
 `data/_raw/`, `.venv/` and `node_modules/` are gitignored; only the simplified
 TopoJSON is committed.
 
-Current build: 14 layers, ~830 KB of TopoJSON, no network calls after load.
+Current build: 18 layers, ~1.1 MB of TopoJSON, no network calls after load.
 
 ---
 
