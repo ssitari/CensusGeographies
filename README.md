@@ -2,7 +2,7 @@
 
 This website is a short interactive demonstration of select geographies used for US Census data, in particular the Decennial Census and the American Community Survey (ACS). Built initially for the [Columbia University Libraries census research guide](https://guides.library.columbia.edu/census), this guide is designed for researchers and students that are complete novices to working with Census geographies.  
 
-To be sure, this guide is non-comprehensive and only includes a limited sample of geographic types.  It is designed with a NYC-centric audience and includes neighborhood delineations (including NTAs and CDTAs) that may not be applicable to other parts of the US.  That said, all data here is in the public domain and you are free to use with attribution.
+To be sure, this guide is non-comprehensive and only includes a limited sample of geographic types.  It is designed with a NYC-centric audience and includes neighborhood delineations (including NTAs and CDTAs) that may not be applicable to other parts of the US.  That said, all data here is open for reuse with attribution.
 
 Built with [D3.js](https://d3js.org). No build step required — plain HTML, CSS,
 and ES modules.
