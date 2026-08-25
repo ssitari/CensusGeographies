@@ -134,6 +134,16 @@ export const STEPS = [
     layer: "county-ny",
     context: ["state-ny"],
     projection: "local",
+    // The only step with a map title — every other step's own label already
+    // says what's on screen via the stepper and callout header, but a wall of
+    // 62 unlabelled counties benefits from stating the state outright.
+    title: "New York State",
+    // No labelFit: "inside" here, unlike state/CD — tried it, and it drops
+    // every single county at this zoom (62 shapes across one state frame are
+    // too small on average for a full "___ County" name to fit wholly inside
+    // its own polygon). Left unconstrained, 51 of 62 place cleanly; the rest
+    // stay reachable on hover, same fallback as everywhere else labels drop.
+    labels: ["county-ny"],
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: null, tract: null },

@@ -151,6 +151,30 @@
        unit. The attribute selector outranks the id rule and puts it away. */
     #missing[hidden] { display: none; }
 
+    /* Columbia reference marker — a landmark, not a Census geography, so it
+       gets no legend key elsewhere and no hover behaviour of its own. */
+    .col-marker {
+      fill: #B9D9EB; stroke: #1D4F91; stroke-width: 1.1px;
+      pointer-events: none;
+    }
+    /* No z-index: #readout has none either, so this stacks on plain DOM
+       order — placed before #readout in the markup, it paints underneath. */
+    #col-legend {
+      position: absolute; left: 14px; bottom: 14px;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(255,255,255,.85); border-radius: 3px;
+      padding: 3px 8px 3px 6px;
+      font-size: 10.5px; color: #555;
+      pointer-events: none;
+    }
+    #col-legend .dot {
+      width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+      background: #B9D9EB; border: 1.1px solid #1D4F91; box-sizing: border-box;
+    }
+    /* #readout sits in this same corner and only occupies it while hovering a
+       unit (it's display:none when empty) — the legend is what normally shows
+       there, and readout briefly covers it on hover, same as any tooltip. */
+
     #offmap[hidden] { display: none; }
     #offmap {
       position: absolute; right: 14px; top: 14px;
@@ -326,6 +350,7 @@
       <div id="panes"></div>
       <div id="missing" hidden></div>
       <div id="offmap" hidden></div>
+      <div id="col-legend"><span class="dot"></span>Columbia University</div>
       <div id="readout"></div>
     </div>
     <aside id="callout"></aside>

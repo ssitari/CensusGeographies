@@ -22,6 +22,13 @@ const panesEl = document.getElementById("panes");
 let panes = [];
 let paneSig = "";
 
+// A fixed reference point, drawn on every pane in every step so a viewer can
+// orient any frame — from the whole country down to a single block — against
+// one place they already know. [lon, lat], GeoJSON order. Colours are a
+// generic light/dark blue rather than Columbia's actual brand mark, so this
+// carries no trademark question.
+const COLUMBIA = [-73.961944, 40.8075];
+
 function paneConfigs(step) {
   return (step.panes?.length ? step.panes : [{}]).map((p) => ({ ...step, ...p }));
 }
@@ -52,6 +59,9 @@ function buildPanes(cfgs) {
       gRoads: svg.append("g").attr("class", "layer-roads"),
       gOverlay: svg.append("g").attr("class", "layer-overlay"),
       gLabels: svg.append("g").attr("class", "layer-labels"),
+      // Topmost, so the reference marker is never buried under a unit fill or
+      // a label — it is a landmark, not part of the geography being taught.
+      gMarker: svg.append("g").attr("class", "layer-marker"),
     };
   });
 }
@@ -168,6 +178,7 @@ async function drawPane(pane, cfg, main, animate) {
     pane.gMain.selectAll("path").remove();
     pane.gContext.selectAll("path").remove();
     pane.gLabels.selectAll("*").remove();
+    pane.gMarker.selectAll("*").remove();
     return;
   }
 
@@ -251,6 +262,7 @@ async function drawPane(pane, cfg, main, animate) {
   }
 
   await renderLabels(cfg, pane);
+  drawColumbiaMarker(pane);
 
   // Hand back the features that failed to project. Reading this off the DOM
   // instead would also catch the previous step's units, which are still in the
@@ -260,6 +272,23 @@ async function drawPane(pane, cfg, main, animate) {
     const node = all.nodes()[i];
     return node && !node.getAttribute("d");
   });
+}
+
+// Non-interactive: it sits above the units in z-order, and a pointer-events
+// hit here would block hovering whatever unit it happens to land on — most
+// often the very Morningside Heights units several steps are already zoomed
+// to. `projection` can return a point far outside the pane at national scale;
+// that is fine and expected, it just draws off the visible viewBox.
+function drawColumbiaMarker(pane) {
+  const pt = projection(COLUMBIA);
+  pane.gMarker.selectAll("circle").remove();
+  if (!pt || Number.isNaN(pt[0]) || Number.isNaN(pt[1])) return;
+  pane.gMarker
+    .append("circle")
+    .attr("class", "col-marker")
+    .attr("cx", pt[0])
+    .attr("cy", pt[1])
+    .attr("r", 4.5);
 }
 
 // ── map labels ───────────────────────────────────────────────────────────────
