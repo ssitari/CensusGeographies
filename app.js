@@ -448,9 +448,14 @@ async function renderLabels(step, pane) {
     // hamlet happened to come first in the file. With `labelMax` this is what
     // makes "label the larger ones" work without needing a population cut-off.
     const only = new Set(key === step.layer ? step.highlight || [] : []);
+    // Features whose label collides with something else on the frame that
+    // the placement algorithm doesn't know to avoid — the Columbia marker is
+    // its own layer, not a label, so nothing steers a label away from it.
+    const excluded = new Set(step.labelExclude || []);
 
     const eligible = l.features.filter((f) => {
       if (only.size && !only.has(f.properties[l.spec.id])) return false;
+      if (excluded.has(f.properties[l.spec.id])) return false;
       if (l.spec.labelWhen && !l.spec.labelWhen(f.properties)) return false;
       if (step.labelMinPop) {
         const pop = +f.properties[l.spec.popProp];

@@ -111,6 +111,9 @@ export const STEPS = [
     // not fit the label is dropped — the same call a printed atlas makes for
     // Rhode Island. Hovering still names any state.
     labelFit: "inside",
+    // New Jersey's "NJ" label lands right on the Columbia marker at this
+    // scale. Dropped rather than nudged — hovering still names the state.
+    labelExclude: ["34"],
     projection: "albers-usa",
     callout: {
       status: "Legal",
@@ -144,6 +147,9 @@ export const STEPS = [
     // its own polygon). Left unconstrained, 51 of 62 place cleanly; the rest
     // stay reachable on hover, same fallback as everywhere else labels drop.
     labels: ["county-ny"],
+    // Queens County's label lands right on the Columbia marker at this
+    // scale. Dropped rather than nudged — hovering still names the county.
+    labelExclude: ["36081"],
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: null, tract: null },

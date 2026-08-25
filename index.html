@@ -84,14 +84,22 @@
        introducing a separate token system for one more component. */
     #geo-nav {
       width: 322px; flex-shrink: 0; background: #fff;
-      border-right: 0.5px solid #ddd; overflow-y: auto; overflow-x: hidden;
+      border-right: 0.5px solid #ddd; overflow: hidden;
       padding: 14px 10px;
-      /* Centered when the window is tall enough to show the whole rail with
-         room to spare; once it doesn't fit, this same rule lets it scroll
-         from the top rather than clipping the middle. */
       display: flex; flex-direction: column; justify-content: center;
     }
-    #geo-nav svg { display: block; width: 100%; height: auto; flex-shrink: 0; }
+    /* height: 100% rather than height: auto — the svg's fixed viewBox aspect
+       ratio then scales to fit *whichever* dimension is tighter (default
+       preserveAspectRatio="xMidYMid meet"), the same way the map panel's own
+       svg already reflows to whatever space it's given. Previously a short
+       window left the rail taller than its box with only overflow-y:auto to
+       reach the rest, and centered overflow is a known trap — the browser
+       lands scrollTop on the middle of the content, so the top of the
+       schematic could be off-screen on load with no visible cue that
+       scrolling would reveal it. Scaling down instead means the whole
+       schematic is always visible, just smaller on a short window — the
+       same trade every zoom level on the map panel already makes. */
+    #geo-nav svg { display: block; width: 100%; height: 100%; flex-shrink: 0; }
 
     .gd-node { cursor: pointer; }
     .gd-node rect {
