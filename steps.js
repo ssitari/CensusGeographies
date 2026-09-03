@@ -403,7 +403,10 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: null },
-      size: "1,200–8,000 people, with an optimum size of 4,000 people",
+      // Paraphrases two glossary definitions rather than quoting one, so this
+      // answers "what is it" the way the other steps do and still carries the
+      // range. Both quotes are preserved verbatim in SOURCES.md.
+      size: "Small, relatively permanent statistical subdivisions of a county, holding 1,200–8,000 people.",
       acs: "Decennial Census totals and ACS 5-year samples",
       geoid: {
         pattern: "SSCCCTTTTTT",
@@ -411,7 +414,7 @@ export const STEPS = [
         parts: [["state", 2], ["county", 3], ["tract", 6]],
       },
       ids: "11 digit FIPS code (this tract is 36061020500), summary level 140",
-      gotcha: "Census tracts are likely the best known and most widely used of the “neighborhood” level census geographies. They're delineated by the Census Bureau and may change every 10 years alongside the Decennial Census. Tracts are designed to hold roughly 4,000 people (typical range 1,000–8,000), so their physical size varies widely with population density.",
+      gotcha: "Census tracts are likely the best known and most widely used of the “neighborhood” level census geographies. They're delineated by the Census Bureau and may change every 10 years alongside the Decennial Census. Tracts are designed to hold roughly 4,000 people (typical range 1,200–8,000), so their physical size varies widely with population density.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -436,7 +439,7 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: true, county: true, tract: true },
-      size: "generally defined to contain between 600 and 3,000 people",
+      size: "Subdivisions of a census tract, generally containing 600–3,000 people.",
       acs: "Decennial Census totals and ACS 5-year samples (usually)",
       geoid: {
         pattern: "SSCCCTTTTTTB",

@@ -44,6 +44,22 @@ guide goes on the Libraries site. Corrections made:
   conspicuously, so it should parse.
 - Consistency: "US" → "U.S." throughout, "Washington DC"/"Washington D.C." →
   "Washington, D.C.", one missing terminal period.
+- **Tract and block-group "What is it?" now describe the geography** rather
+  than giving only a population range, which is what the other eleven steps
+  do. Both were verbatim glossary fragments and read as answers to a
+  different question ("how big is it"); they now paraphrase the glossary's
+  definition *and* its range in one sentence. The verbatim quotes stay in the
+  table at the top of this file, so nothing is lost as a citation.
+- **The tract step contradicted itself on its own range** — "What is it?"
+  cited 1,200–8,000 while "What else should I know?" said "typical range
+  1,000–8,000." The glossary says 1,200, so the gotcha was the wrong one.
+
+Left as designed after review: several de-emphasized greys (field headings,
+the scope line, footer text, the "not published at this level" note) fall
+below the WCAG AA 4.5:1 contrast ratio for text under 18px. Measured and
+raised before publication; Eric's call was to keep the existing visual
+hierarchy. Recorded here so a later accessibility review finds a decision
+rather than an oversight.
 
 Every outbound link on the site and in the README was requested and checked;
 all resolve except `claude.ai`, which returns 403 to scripted requests and is
