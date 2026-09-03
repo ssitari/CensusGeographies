@@ -68,7 +68,7 @@ export const STEPS = [
       geoid: { pattern: "US", example: "US", parts: [["nation", 2]] },
       ids: "No FIPS code, summary level 010",
       gotcha: "National level downloads include data for all 50 states and Washington D.C. (not Puerto Rico or other territories, which will need separate extraction).",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
   {
@@ -96,7 +96,7 @@ export const STEPS = [
       geoid: { pattern: "D", example: "1", parts: [["division", 1]] },
       ids: "No FIPS code, summary level 020 (region) and 030 (division)",
       gotcha: "These definitions are generally persistent and primarily used by the Census itself to represent what it considers to be socioeconomically and culturally coherent areas. Your mileage will vary.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
   {
@@ -123,7 +123,7 @@ export const STEPS = [
       geoid: { pattern: "SS", example: "36", parts: [["state", 2]] },
       ids: "2 digit FIPS code (NY is 36), summary level 040",
       gotcha: "The 50 states and Washington DC. These tend to be persistent. U.S. territories use the same leading 2-digit FIPS pattern and tend to be treated the same way in most databases.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
 
@@ -158,7 +158,7 @@ export const STEPS = [
       geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
       ids: "5 digit FIPS code including the state code (New York County is 36061), summary level 050",
       gotcha: "These tend to be persistent. Nest in and wholly comprise states, including water surfaces. Counties range very widely in population — from under 100 to almost 10 million — so ACS 1-year and 3-year samples are only available for larger counties. Second-level administrative units that aren't counties (parishes in Louisiana, for example) still show up here.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
   {
@@ -181,7 +181,7 @@ export const STEPS = [
       geoid: { pattern: "SSDD", example: "3623", parts: [["state", 2], ["district", 2]] },
       ids: "4 digit FIPS code (NY's northernmost CD is 3621), summary level 500",
       gotcha: "The Decennial Census is used to inform the delineation of Congressional (and other state legislative) districts, and also uses those districts to release summaries. By law, Congressional Districts have roughly similar populations — currently over 700,000 people — and are redrawn at least every 10 years. Redistricting has become more common than that in practice. State legislative district summaries are also available.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
   {
@@ -242,7 +242,7 @@ export const STEPS = [
       geoid: { pattern: "SSPPPPP", example: "3655948", parts: [["state", 2], ["place", 5]] },
       ids: "7 digit FIPS code (New York City is 3651000), summary level 160",
       gotcha: "May or may not be persistent. Nests in states, including water surfaces. The Census splits this geography into two categories — incorporated places and census-designated places. This is what you'd typically use to extract data by municipality or city, not metropolitan area. Places range very widely in population, so ACS 1-year and 3-year samples are only available for larger ones. Places don't overlap or cross state lines, and not all areas or populations are inside a place.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
 
@@ -273,7 +273,7 @@ export const STEPS = [
       geoid: { pattern: "SSPPPPP", example: "3604109", parts: [["state", 2], ["puma", 5]] },
       ids: "7 digit FIPS code (this one is 3604109), summary level 795",
       gotcha: "PUMAs are Census-derived neighborhoods created for microdata samples, though Census and ACS summary data are available for them too. A PUMA typically has between 100,000 and 200,000 people and nests within a state. Boundaries may change every 10 years and their area can vary widely with population density. In NYC, PUMA boundaries are usually drawn to line up fairly closely with Community District planning areas and CDTAs.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
   {
@@ -372,7 +372,7 @@ export const STEPS = [
       geoid: { pattern: "ZZZZZ", example: "10027", parts: [["zcta", 5]] },
       ids: "5 digit code matching the USPS designation (example: 10027), summary level 860",
       gotcha: "ZIP Codes as used by the U.S. Postal Service have no official areal definition — they're lists of mailing addresses. They're commonly used for neighborhood analysis anyway, especially in business research, so since 2000 the Census Bureau has built ZIP Code Tabulation Areas (ZCTAs) to approximate them, updated every 10 years. They vary widely in population, typically thousands to tens of thousands of people, and their relationship to current ZIP Codes may drift from USPS usage, which can also change at any time. A ZCTA may split a census tract and can span county or state boundaries. Unless you need data at the ZIP Code level specifically, consider a tract instead as your neighborhood unit.",
-      source: null,
+      source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
   {

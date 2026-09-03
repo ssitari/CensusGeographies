@@ -12,6 +12,23 @@ Quote verbatim where possible. Paraphrase drifts.
 | tract | Status | Statistical — "small, relatively permanent statistical subdivisions of a county or statistically equivalent entity" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 | block-group | Typical size | "generally defined to contain between 600 and 3,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 
+## Fallback source link for the general-definition steps — checked 2026-08-27
+
+Eight steps (nation, region-division, state, county, congressional-district,
+place, puma, zcta) had `source: null` — their callout text isn't a quote of
+one specific published figure, it's a general description, so there was
+never one URL to cite. Rather than ship "source not recorded" on 8 of 13
+steps, all eight now point at the [Census Geography Program
+Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html)
+— already the source for tract, block-group and block above, and the Bureau's
+own general reference for exactly this kind of "what is this geography"
+content. Not a citation for a specific quoted number, so no per-field row
+here the way a specific size or threshold claim gets one.
+
+The page footer also now credits a further-reading citation for anyone who
+wants a fuller treatment than a guided tour can give: Donnelly, F. (2019).
+*Exploring the U.S. Census: Your Guide to America's Data*. SAGE.
+
 ## Metro Area step replaces New York City — checked 2026-08-20
 
 The New York City step (the "inversion" — Place fully containing five
