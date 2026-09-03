@@ -62,12 +62,12 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: null, state: null, county: null, tract: null },
-      size: "Not surprisingly, the broadest geographic unit is the entire country",
+      size: "Not surprisingly, the broadest geographic unit is the entire country.",
       acs: "Decennial Census totals and ACS estimates for all samples",
       // TIGER gives the nation feature the literal GEOID "US", not a digit.
       geoid: { pattern: "US", example: "US", parts: [["nation", 2]] },
       ids: "No FIPS code, summary level 010",
-      gotcha: "National level downloads include data for all 50 states and Washington D.C. (not Puerto Rico or other territories, which will need separate extraction).",
+      gotcha: "National-level downloads include data for all 50 states and Washington, D.C. (not Puerto Rico or other territories, which will need separate extraction).",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -91,7 +91,7 @@ export const STEPS = [
     callout: {
       status: "Statistical",
       nests: { nation: true, state: null, county: null, tract: null },
-      size: "The Census divides the 50 states into four regions, which are in turn comprised of nine divisions.",
+      size: "The Census Bureau divides the 50 states and the District of Columbia into four regions, which are in turn composed of nine divisions.",
       acs: "Decennial Census totals and ACS estimates for all samples",
       geoid: { pattern: "D", example: "1", parts: [["division", 1]] },
       ids: "No FIPS code, summary level 020 (region) and 030 (division)",
@@ -118,11 +118,11 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: true, state: null, county: null, tract: null },
-      size: "The first-level administrative districts in the US.",
+      size: "The first-level administrative districts in the U.S.",
       acs: "Decennial Census totals and ACS estimates for all samples",
       geoid: { pattern: "SS", example: "36", parts: [["state", 2]] },
       ids: "2 digit FIPS code (NY is 36), summary level 040",
-      gotcha: "The 50 states and Washington DC. These tend to be persistent. U.S. territories use the same leading 2-digit FIPS pattern and tend to be treated the same way in most databases.",
+      gotcha: "The 50 states and Washington, D.C. These tend to be persistent. U.S. territories use the same leading 2-digit FIPS pattern and tend to be treated the same way in most databases.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -157,7 +157,7 @@ export const STEPS = [
       acs: "Decennial Census totals and ACS 5-year samples. 1-year samples for larger counties.",
       geoid: { pattern: "SSCCC", example: "36061", parts: [["state", 2], ["county", 3]] },
       ids: "5 digit FIPS code including the state code (New York County is 36061), summary level 050",
-      gotcha: "These tend to be persistent. Nest in and wholly comprise states, including water surfaces. Counties range very widely in population — from under 100 to almost 10 million — so ACS 1-year and 3-year samples are only available for larger counties. Second-level administrative units that aren't counties (parishes in Louisiana, for example) still show up here.",
+      gotcha: "These tend to be persistent. Nest in and wholly comprise states, including water surfaces. Counties range very widely in population — from under 100 to almost 10 million — so ACS 1-year samples are only available for larger counties. Second-level administrative units that aren't counties (parishes in Louisiana, for example) still show up here.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -176,7 +176,7 @@ export const STEPS = [
     callout: {
       status: "Legal",
       nests: { nation: true, state: true, county: false, tract: null },
-      size: "US House of Representatives political districts.",
+      size: "U.S. House of Representatives political districts.",
       acs: "Decennial Census totals and ACS estimates for all samples",
       geoid: { pattern: "SSDD", example: "3623", parts: [["state", 2], ["district", 2]] },
       ids: "4 digit FIPS code (NY's northernmost CD is 3621), summary level 500",
@@ -208,7 +208,7 @@ export const STEPS = [
       geoid: { pattern: "CCCCC", example: "35620", parts: [["cbsa", 5]] },
       ids: "5-digit CBSA code (New York-Newark-Jersey City MSA is 35620), summary level 310",
       gotcha: "The Census Bureau uses a number of geographic definitions to describe urban and metropolitan areas, of which Metropolitan Statistical Areas (MSAs) are just one. MSAs are a type of Core Based Statistical Area (CBSA) and are an aggregation of economically and socially related counties named after a central urban area. New York-Newark-Jersey City is the largest of these, comprised of 23 counties across New York, New Jersey, and Pennsylvania, and is in turn incorporated into the larger New York-Newark, NY-NJ-CT-PA Combined Statistical Area (CSA).",
-      source: "https://www.census.gov/programs-surveys/metro-micro/about.html",
+      source: "https://www.census.gov/programs-surveys/metro-micro/about/glossary.html",
     },
   },
   {
@@ -241,7 +241,7 @@ export const STEPS = [
       acs: "Decennial Census totals and ACS 5-year samples. 1-year samples for larger places.",
       geoid: { pattern: "SSPPPPP", example: "3655948", parts: [["state", 2], ["place", 5]] },
       ids: "7 digit FIPS code (New York City is 3651000), summary level 160",
-      gotcha: "May or may not be persistent. Nests in states, including water surfaces. The Census splits this geography into two categories — incorporated places and census-designated places. This is what you'd typically use to extract data by municipality or city, not metropolitan area. Places range very widely in population, so ACS 1-year and 3-year samples are only available for larger ones. Places don't overlap or cross state lines, and not all areas or populations are inside a place.",
+      gotcha: "May or may not be persistent. Nests in states, including water surfaces. The Census splits this geography into two categories — incorporated places and census-designated places. This is what you'd typically use to extract data by municipality or city, not metropolitan area. Places range very widely in population, so ACS 1-year samples are only available for larger ones. Places don't overlap or cross state lines, and not all areas or populations are inside a place.",
       source: "https://www.census.gov/programs-surveys/geography/about/glossary.html",
     },
   },
@@ -339,7 +339,14 @@ export const STEPS = [
       },
       ids: "NTAs use a 4–6 digit alphanumeric code (example: MN0901); CDTAs use a 4 digit alphanumeric code (example: MN09)",
       gotcha: "These neighborhood constructs are aggregations of census tracts designated by NYC Planning to approximate neighborhood units. Neighborhood Tabulation Areas (NTAs) are meant to approximate vernacular neighborhoods — ones with names residents would recognize and boundaries that make sense — and typically hold a few tens of thousands of people across 8 or 9 tracts. Community District Tabulation Areas (CDTAs) are aggregations of NTAs meant to approximate NYC Planning's Community District areas, which city agencies widely use. There are 71 of these, typically over 100,000 people and 3–4 NTAs each. An individual CDTA usually lines up reasonably closely with a Census PUMA, which can let researchers use microdata samples as a CDTA approximation.",
-      source: "https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020",
+      // One per side of the split frame — NYC Planning's own dataset page for
+      // each. The geometry itself comes from the Columbia tract file both are
+      // dissolved from, cited in SOURCES.md and the page footer rather than
+      // here, since these two describe what the geographies *are*.
+      source: [
+        ["NTAs", "https://www.nyc.gov/content/planning/pages/resources/datasets/neighborhood-tabulation"],
+        ["CDTAs", "https://www.nyc.gov/content/planning/pages/resources/datasets/community-district-tabulation"],
+      ],
     },
   },
   {

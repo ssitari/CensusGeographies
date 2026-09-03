@@ -237,11 +237,11 @@ Every New York City layer comes from two DCP files obtained through Columbia
 University Libraries, both committed under `sources/`:
 
 > New York (N.Y.). Department of City Planning. *New York City Boroughs, 2023.*
-> [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023)
+> [geodata.library.columbia.edu/catalog/columbia-nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/columbia-nycp-nybb-2023)
 
 > New York (N.Y.). Department of City Planning and Columbia University
 > Libraries. *New York City Census Tracts with Multiple Tract Identifiers,
-> 2020.* [geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020)
+> 2020.* [geodata.library.columbia.edu/catalog/columbia-cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/columbia-cul-nyc-tracts-2020)
 
 Both catalog records list rights as *None* and access as *public*. They are
 committed rather than downloaded at build time so the pipeline cannot break

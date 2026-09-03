@@ -644,6 +644,22 @@ function field(label, value) {
   return `<div class="field"><dt>${label}</dt><dd>${body}</dd></div>`;
 }
 
+// `source` is normally one URL and renders as a single "source" link. A step
+// that teaches two geographies at once needs one link each, so it may instead
+// be a list of [label, url] pairs — the NTA/CDTA step cites NYC Planning's
+// own page for each side of its split frame.
+function sourceLinks(source) {
+  if (!source) return `<span class="source todo">source not recorded</span>`;
+  const link = (url, text) =>
+    `<a class="source" href="${escapeHtml(url)}" target="_blank" rel="noopener">${escapeHtml(text)}</a>`;
+  if (typeof source === "string") return link(source, "source");
+  return (
+    `<div class="sources"><span class="sources-label">sources</span>` +
+    source.map(([label, url]) => link(url, label)).join("") +
+    `</div>`
+  );
+}
+
 function nestBadge(nests) {
   const cells = NEST_KEYS.map((k) => {
     if (nests[k] === null || nests[k] === undefined) return "";
@@ -674,11 +690,7 @@ function renderCallout(step) {
       ${field("What are the IDs?", c.ids)}
       ${field("What else should I know?", c.gotcha)}
     </dl>
-    ${
-      c.source
-        ? `<a class="source" href="${c.source}" target="_blank" rel="noopener">source</a>`
-        : `<span class="source todo">source not recorded</span>`
-    }
+    ${sourceLinks(c.source)}
   `;
 }
 

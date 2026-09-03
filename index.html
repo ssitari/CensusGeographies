@@ -4,6 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Census Geographies — A Guided Tour</title>
+  <meta name="description" content="An interactive walk down the U.S. census geographic hierarchy, from the nation to a single city block, built for researchers and students new to census data.">
+  <meta name="color-scheme" content="light">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
   <style>
@@ -261,6 +263,12 @@
 
     .source { display: inline-block; margin-top: 12px; font-size: 11px; color: #2b4a6f; }
     span.source { color: #c0392b; opacity: .65; font-style: italic; }
+    /* A step teaching two geographies at once cites one source per side. */
+    .sources { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    .sources .source { margin-top: 0; }
+    .sources-label {
+      font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: .5px;
+    }
 
     /* ── Map marks ───────────────────────────────────────────────────────
        One scheme for every frame, taken from the ZCTA step:
@@ -347,8 +355,8 @@
 
   <div id="toolbar">
     <h1>Census Geographies</h1>
-    <button class="navbtn" id="prev" title="Previous (←)">‹</button>
-    <button class="navbtn" id="next" title="Next (→)">›</button>
+    <button class="navbtn" id="prev" title="Previous (←)" aria-label="Previous step">‹</button>
+    <button class="navbtn" id="next" title="Next (→)" aria-label="Next step">›</button>
     <nav id="stepper"></nav>
   </div>
 
@@ -379,9 +387,9 @@
       <a href="https://www.census.gov/geographies/mapping-files/time-series/geo/tiger-line-file.html" target="_blank" rel="noopener">TIGER/Line®</a>
       Shapefiles (2020) and
       <a href="https://www.nyc.gov/site/planning/data-maps/open-data.page" target="_blank" rel="noopener">NYC Department of City Planning</a>
-      open data. This product is not endorsed by, and uses TIGER/Line® only to
-      refer to the nature of the data; TIGER/Line® is a registered trademark of
-      the U.S. Census Bureau. Boundary information is for statistical tabulation
+      open data. This product uses TIGER/Line® only to refer to the nature of
+      the data and is not endorsed by the U.S. Census Bureau; TIGER/Line® is a
+      registered trademark of the Bureau. Boundary information is for statistical tabulation
       only and does not constitute a determination of jurisdictional authority
       or legal land descriptions. No warranty is made as to accuracy.
       <a href="https://github.com/ssitari/CensusGeographies" target="_blank" rel="noopener">Source code</a>

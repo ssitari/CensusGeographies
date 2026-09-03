@@ -12,6 +12,45 @@ Quote verbatim where possible. Paraphrase drifts.
 | tract | Status | Statistical — "small, relatively permanent statistical subdivisions of a county or statistically equivalent entity" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 | block-group | Typical size | "generally defined to contain between 600 and 3,000 people" | [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html) | 2026-08-15 |
 
+## Pre-publication proofread — checked 2026-09-03
+
+Full pass over every user-visible string and every outbound link before the
+guide goes on the Libraries site. Corrections made:
+
+- **ACS 3-year estimates are discontinued.** The county and place steps both
+  said 1-year *and 3-year* samples are limited to larger areas, which would
+  send a reader looking for a product that no longer exists. The Bureau:
+  "The ACS 3-year estimates have been discontinued," last release 2011–2013
+  ([ACS 3-year program page](https://www.census.gov/data/developers/data-sets/acs-3year.html)).
+  Both now say 1-year only.
+- **Regions and divisions cover DC, not just the 50 states.** The step read
+  "divides the 50 states into four regions." The Bureau's own reference
+  lists District of Columbia (11) inside Division 5, South Atlantic
+  ([Census Regions and Divisions with State FIPS Codes](https://www2.census.gov/geo/pdfs/maps-data/maps/reference/us_regdiv.pdf)),
+  so the 51st is now named. Puerto Rico remains outside the scheme.
+- **Three broken links, all 404 in production:**
+  - The MSA step pointed at `metro-micro/about.html`, which no longer
+    exists. Repointed to the [metro/micro
+    glossary](https://www.census.gov/programs-surveys/metro-micro/about/glossary.html),
+    which defines CBSA, Metropolitan Statistical Area and Combined
+    Statistical Area — the three terms that step's text actually uses.
+  - Both `geodata.library.columbia.edu` citations in README and here were
+    missing the catalog's `columbia-` id prefix
+    (`catalog/cul-nyc-tracts-2020` → `catalog/columbia-cul-nyc-tracts-2020`).
+    Confirmed against the catalog's own JSON API, and both now resolve.
+- **"comprised of" → "composed of"**, and the footer's TIGER/Line notice had
+  a dangling "not endorsed by," with no object — now "not endorsed by the
+  U.S. Census Bureau." That sentence is the one the Bureau asks be carried
+  conspicuously, so it should parse.
+- Consistency: "US" → "U.S." throughout, "Washington DC"/"Washington D.C." →
+  "Washington, D.C.", one missing terminal period.
+
+Every outbound link on the site and in the README was requested and checked;
+all resolve except `claude.ai`, which returns 403 to scripted requests and is
+fine in a browser. nyc.gov returns 200 to a normal browser and blocks
+headless ones, so those two DCP links were confirmed by status code and page
+shell rather than rendered content.
+
 ## Fallback source link for the general-definition steps — checked 2026-08-27
 
 Eight steps (nation, region-division, state, county, congressional-district,
@@ -86,7 +125,7 @@ Eric rather than changed silently:
   York-Newark, NY-NJ-CT-PA CSA," matching the draft as written.
 - **"CBSA code," not "FIPS code"** — the draft called the 5-digit identifier
   a FIPS code. Census's [Metropolitan and Micropolitan Statistical Areas
-  program page](https://www.census.gov/programs-surveys/metro-micro/about.html)
+  glossary](https://www.census.gov/programs-surveys/metro-micro/about/glossary.html)
   uses "CBSA" throughout and never "FIPS" for this identifier; FIPS 6-4
   covers states, counties, and places, not CBSAs. Corrected to "CBSA code."
 
@@ -179,8 +218,8 @@ verified earlier in this project rather than new research:
 
 | Source | Status | Obligation |
 |---|---|---|
-| NYC Boroughs 2023 (`sources/nycp_nybb_2023.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning, *New York City Boroughs, 2023*. Via Columbia University Libraries, [geodata.library.columbia.edu/catalog/nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/nycp-nybb-2023) |
-| NYC Census Tracts 2020 (`sources/cul_nyc_tracts_2020.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning and Columbia University Libraries, *New York City Census Tracts with Multiple Tract Identifiers, 2020*. [geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/cul-nyc-tracts-2020) |
+| NYC Boroughs 2023 (`sources/nycp_nybb_2023.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning, *New York City Boroughs, 2023*. Via Columbia University Libraries, [geodata.library.columbia.edu/catalog/columbia-nycp-nybb-2023](https://geodata.library.columbia.edu/catalog/columbia-nycp-nybb-2023) |
+| NYC Census Tracts 2020 (`sources/cul_nyc_tracts_2020.gpkg`) | Rights: None; access: public | New York (N.Y.). Department of City Planning and Columbia University Libraries, *New York City Census Tracts with Multiple Tract Identifiers, 2020*. [geodata.library.columbia.edu/catalog/columbia-cul-nyc-tracts-2020](https://geodata.library.columbia.edu/catalog/columbia-cul-nyc-tracts-2020) |
 | NYC Block Groups 2020 — **Manhattan extract** (`sources/nyc_blockgroups_manhattan.gpkg`) | Via Columbia University Libraries | Cut from `census_nyc_2020_blockgroups` by `scripts/extract_sources.py`. Confirm the catalog record before publishing a citation. |
 | NYC Blocks 2020 — **Manhattan extract** (`sources/nyc_blocks_manhattan.gpkg`) | Via Columbia University Libraries | Cut from `nycp_2020_blocks` (NYC DCP) by `scripts/extract_sources.py`. Confirm the catalog record before publishing a citation. |
 | Place population (`sub-est2024.csv`) | Public domain (U.S. Government work) | U.S. Census Bureau, *Subcounty Resident Population Estimates*, vintage 2024. Column `ESTIMATESBASE2020` = the April 1, 2020 estimates base. [Direct download](https://www2.census.gov/programs-surveys/popest/datasets/2020-2024/cities/totals/sub-est2024.csv) |
@@ -359,6 +398,6 @@ they get stated wrong:
 ## Useful starting points
 
 - [Census Geography Program Glossary](https://www.census.gov/programs-surveys/geography/about/glossary.html)
-- [Geographic Areas Reference Manual (GARM)](https://www.census.gov/programs-surveys/geography/guidance/geographic-areas-reference-manual.html)
+- [Geographic Areas Reference Manual (GARM)](https://www2.census.gov/geo/pdfs/reference/GARM/GARMcont.pdf) — the HTML landing page for this was retired; this is the PDF, still posted
 - [Understanding Geographic Identifiers (GEOIDs)](https://www.census.gov/programs-surveys/geography/guidance/geo-identifiers.html)
 - [NYC Department of City Planning open data](https://www.nyc.gov/site/planning/data-maps/open-data.page)
